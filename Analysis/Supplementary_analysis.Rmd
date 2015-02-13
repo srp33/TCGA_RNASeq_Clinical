@@ -1,0 +1,55 @@
+This is the R code for supplementary analysis
+
+```{r echo=FALSE}
+options(digits=2)
+```
+
+Download the processed files for this analysis from GEO(Accession#GSE62820)
+```{r}
+
+#######################comparing gene counts results in our dataset############
+setwd("~/Dropbox/TCGA_PANCAN20_manuscript/Datasets/Analysis datasets/")
+TCGA_her2<-read.table("GFP18_HER2_TCGA_Pipeline_Normalized_Genes_Results.txt", sep='\t', header=1, check.names=F)
+#nrow(TCGA_her2)
+TCGA_her2_filtered<-TCGA_her2[!duplicated(TCGA_her2$Gene),]
+rownames(TCGA_her2_filtered)<-TCGA_her2_filtered$Gene
+TCGA_her2<-subset(TCGA_her2_filtered,select=-Gene)
+tcga_her2_normalized<-data.frame(t(TCGA_her2["ERBB2",]))
+colnames(tcga_her2_normalized)<-"TCGA_ERBB2"
+```
+Coefficient of variation for TCGA Level 3 pipeline processed data is `r sd(tcga_her2_normalized$TCGA_ERBB2)/mean(tcga_her2_normalized$TCGA_ERBB2)`
+
+```{r}
+setwd("~/Dropbox/TCGA_PANCAN20_manuscript/Datasets/Analysis datasets/")
+rsub_fpkmlog<-read.table("GFP18_HER2_Rsubread_FPKMlog.txt", sep='\t',header=1, row.names=1, check.names = F)
+rsub_fpkmlog_her2<-data.frame(t(rsub_fpkmlog["ERBB2",]))
+colnames(rsub_fpkmlog_her2)<-"Rsubread_FPKMlog_ERBB2"
+```
+Coefficient of variation for Rsubread FPKM processed data is `r sd(rsub_fpkmlog_her2$Rsubread_FPKMlog_ERBB2)/mean(rsub_fpkmlog_her2$Rsubread_FPKMlog_ERBB2)`
+
+```{r}
+setwd("~/Dropbox/TCGA_PANCAN20_manuscript/Datasets/Analysis datasets/")
+rsub_tpmlog<-read.table("GFP18_HER2_Rsubread_TPMlog.txt", sep='\t',header=1, row.names=1, check.names = F)
+rsub_tpmlog_her2<-data.frame(t(rsub_tpmlog["ERBB2",]))
+colnames(rsub_tpmlog_her2)<-"Rsubread_TPMlog_ERBB2"
+```
+Coefficient of variation for TCGA Level 3 pipeline processed data is `r sd(rsub_tpmlog_her2$Rsubread_TPMlog_ERBB2)/mean(rsub_tpmlog_her2$Rsubread_TPMlog_ERBB2)`
+
+```{r}
+library(vioplot)
+#vioplot(log2(tcga_her2_normalized$TCGA_ERBB2[1:12]+1),log2(tcga_her2_normalized$TCGA_ERBB2[13:17]+1),rsub_fpkmlog_her2$Rsubread_FPKMlog_ERBB2[1:12],rsub_fpkmlog_her2$Rsubread_FPKMlog_ERBB2[13:17],rsub_tpmlog_her2$Rsubread_TPMlog_ERBB2[1:12],rsub_tpmlog_her2$Rsubread_TPMlog_ERBB2[13:17],col='grey')
+
+
+boxplot(log2(tcga_her2_normalized$TCGA_ERBB2[1:12]+1),log2(tcga_her2_normalized$TCGA_ERBB2[13:17]+1),rsub_fpkmlog_her2$Rsubread_FPKMlog_ERBB2[1:12],rsub_fpkmlog_her2$Rsubread_FPKMlog_ERBB2[13:17],rsub_tpmlog_her2$Rsubread_TPMlog_ERBB2[1:12],rsub_tpmlog_her2$Rsubread_TPMlog_ERBB2[13:17],col='grey',ylab="log2(ERBB2 gene expression values)")
+names=c("TCGA\nGFP","TCGA\nHER2","Rsubred FPKM\nGFP", "Rsubred FPKM\nHER2","Rsubred TPM\nGFP", "Rsubred TPM\nHER2")
+text(seq(1,6,by=1),par("usr")[3] - 2, labels = names, srt = 45, pos = 1, xpd = TRUE)
+###t.test to see if there is significance
+t.test(log2(tcga_her2_normalized$TCGA_ERBB2[1:12]+1),log2(tcga_her2_normalized$TCGA_ERBB2[13:17]+1))
+t.test(rsub_fpkmlog_her2$Rsubread_FPKMlog_ERBB2[1:12],rsub_fpkmlog_her2$Rsubread_FPKMlog_ERBB2[13:17])
+t.test(rsub_tpmlog_her2$Rsubread_TPMlog_ERBB2[1:12],rsub_tpmlog_her2$Rsubread_TPMlog_ERBB2[13:17])
+```
+
+```{r echo=FALSE}
+time<-format(Sys.time(),"%a %b %d %X %Y")
+```
+This analysis was run on `r time` 
