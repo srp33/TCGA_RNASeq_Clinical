@@ -7,7 +7,7 @@ outPdfFilePath = commandArgs()[9]
 plotROC = function(actual, probabilities, plotCI=FALSE)
 {
   # bottom, left, top, right
-  par(mar=c(4.5, 4.7, 0.0, 0.5))
+  par(mar=c(4.5, 4.7, 0.0, 0.5),lwd=4)
 
   library(pROC)
   roc_result = roc(actual ~ probabilities, ci=TRUE, plot=TRUE, print.auc=FALSE)
@@ -24,7 +24,7 @@ plotROC = function(actual, probabilities, plotCI=FALSE)
     plot(roc_result, add=TRUE)
   }
 
-  text(0.15, 0.00, labels=paste("AUC: ", midAuc, " (", lowerBoundAuc, "-", upperBoundAuc, ")", sep=""))
+  #text(0.5, 0.00, labels=paste("AUC: ", midAuc, " (", lowerBoundAuc, "-", upperBoundAuc, ")", sep=""))
 
   par(mar=c(5.1, 4.1, 2.1, 2.1))
 }
