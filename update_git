@@ -1,6 +1,0 @@
-#!/bin/bash
-
-set -o errexit
-
-git pull origin master
-git fetch
