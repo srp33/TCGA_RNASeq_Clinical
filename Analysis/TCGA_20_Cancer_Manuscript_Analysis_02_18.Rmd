@@ -67,6 +67,7 @@ merge_drop<-function(x,y,by=0)
 ###########here we are computing standardized mean difference using the exprected gene counts from TCGA pipeline and gene counts from Rsubread algorithm ############
 standardized_mean<-function(m.1,sd.1,n.1,m.2,sd.2,n.2){
   sd_pooled=sqrt(((n.1-1)*sd.1^2+(n.2-1)*sd.2^2)/(n.1+n.2-2))
+  print(sd_pooled)
   (m.1-m.2)/sd_pooled
   }
 
@@ -89,10 +90,10 @@ names=c('TCGA\nGFP','TCGA\nHER2','Rsubread\nGFP', 'Rsubread\nHER2')
 x = c(rep(1, 12), rep(2, 5),rep(3, 12), rep(4, 5))
 #plot(jitter(x,factor=1.5),jitter(c(log2(rsem_her2$TCGA_ERBB2[1:12]+1),log2(rsem_her2$TCGA_ERBB2[13:17]+1),log2(rsub_her2$Rsubread_ERBB2[1:12]+1),log2(rsub_her2$Rsubread_ERBB2[13:17]+1)),factor=1.5), pch=20, cex=2,add=T,col=(x+1%%2)+1,xlab="",ylab="")
 boxplot(log2(rsem_her2$TCGA_ERBB2[1:12]+1),log2(rsem_her2$TCGA_ERBB2[13:17]+1),log2(rsub_her2$Rsubread_ERBB2[1:12]+1),log2(rsub_her2$Rsubread_ERBB2[13:17]+1),xlab='',ylab="log2(Gene counts)",main=paste('Comparing TGCA and Rsubread Pipelines','\n', 'in Differentiating HER2 Overexpression from Controls',sep=''),cex.axis=1.5, cex.lab=1.5,outpch=NA,col='grey',medcol="grey",lwd=4)
-points(jitter(rep(1,12),factor=1.5),log2(rsem_her2$TCGA_ERBB2[1:12]+1),pch=4,cex=2,cex.lab=1.5,col="black")
-points(jitter(rep(2,5),factor=1.5),log2(rsem_her2$TCGA_ERBB2[13:17]+1),pch=4,cex=2,cex.lab=1.5,col='black')
-points(jitter(rep(3,12),factor=1.5),log2(rsub_her2$Rsubread_ERBB2[1:12]+1),pch=4,cex=2,cex.lab=1.5,col='black')
-points(jitter(rep(4,5),factor=1.5),log2(rsub_her2$Rsubread_ERBB2[13:17]+1),pch=4,cex=2,cex.lab=1.5,col='black')
+points(jitter(rep(1,12),factor=2),log2(rsem_her2$TCGA_ERBB2[1:12]+1),pch=4,cex=1.5,cex.lab=1.5,col="black")
+points(jitter(rep(2,5),factor=2),log2(rsem_her2$TCGA_ERBB2[13:17]+1),pch=4,cex=1.5,cex.lab=1.5,col='black')
+points(jitter(rep(3,12),factor=2),log2(rsub_her2$Rsubread_ERBB2[1:12]+1),pch=4,cex=1.5,cex.lab=1.5,col='black')
+points(jitter(rep(4,5),factor=2),log2(rsub_her2$Rsubread_ERBB2[13:17]+1),pch=4,cex=1.5,cex.lab=1.5,col='black')
 
 
 #text(seq(1,6,by=1),par("usr")[3] - 1, labels = names, srt = 45, pos = 1, xpd = TRUE)

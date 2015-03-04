@@ -70,15 +70,17 @@ feature_counts<-apply(feature,2,sum)
 # Creating a plot showing total mapped reads per sample  
 #pdf("~/Dropbox/Bioinformatics submission/Resubmission/updated figures/Total_mapped_reads_dot_plot.pdf",  pointsize = 8)
 pdf("~/Dropbox/Bioinformatics submission/Resubmission/updated figures/all_figures.pdf",  pointsize = 8)
-par( mfrow = c( 1, 2 ),lwd=4 )
+par( mfrow = c( 1, 2 ),lwd=3 )
 x = c(rep(1, 12), rep(2, 5)) # this indicates where on the x axis to plot
 par(mar=c(3.1, 4.6, 2.1, 0.6)) # figure margins
-boxplot(log2(expected_counts[1:12]+1), log2(expected_counts[13:17]+1),range=0,cex.axis=1.5, cex.lab=1.5,outpch=NA,col='grey',medcol="grey",lwd=3,ylim=c(20,25),xlab="", ylab="log2(Total mapped reads)",main="TCGA Level 3",lwd=4)
-points(jitter(x, factor=1.5), c(log2(expected_counts[1:12]+1), log2(expected_counts[13:17]+1)), pch=20, cex=2.5, col=x+1,  xaxt="n", cex.axis=1.5, cex.lab=1.5)
+
+boxplot(log2(expected_counts[1:12]+1), log2(expected_counts[13:17]+1),range=0,cex.axis=1.5, cex.lab=1.5,outpch=NA,lwd=3,ylim=c(20,25),xlab="", ylab="log2(Total mapped reads)",main="TCGA Level 3",col='grey75',medcol="grey75",lwd=3,border = "grey35")
+
+points(jitter(x, factor=2), c(log2(expected_counts[1:12]+1), log2(expected_counts[13:17]+1)), pch=4, cex=2, col=1,  xaxt="n",cex.lab=1.5)
 axis(1, at=1:2, tick=T, labels=c("Control", "HER2"), cex.axis=1.5) # this gives us more control over the axis
 
-boxplot(log2(feature_counts[1:12]+1), log2(feature_counts[13:17]+1),range=0,cex.axis=1.5, cex.lab=1.5,outpch=NA,col='grey',medcol="grey",lwd=3,ylim=c(20,25),xlab="", ylab="log2(Total mapped reads)")
-points(jitter(x, factor=1.5), c(log2(feature_counts[1:12]+1), log2(feature_counts[13:17]+1)), pch=20, cex=2.5, col=x+1, ylim=c(23,25),xaxt="n", cex.axis=1.5, cex.lab=1.5, main="Rsubread")
+boxplot(log2(feature_counts[1:12]+1), log2(feature_counts[13:17]+1),range=0,cex.axis=1.5, cex.lab=1.5,outpch=NA,lwd=3,ylim=c(20,25),xlab="", ylab="log2(Total mapped reads)",col='grey75',medcol="grey75",lwd=3,border = "grey35")
+points(jitter(x, factor=1.5), c(log2(feature_counts[1:12]+1), log2(feature_counts[13:17]+1)), pch=4,cex=2,cex.lab=1.5,col="black")
 axis(1, at=1:2, tick=T, labels=c("Control", "HER2"), cex.axis=1.5) # this gives us more control over the axis
 #dev.off()
 ```
@@ -95,11 +97,14 @@ rsub_her2<-data.frame(t(feature["ERBB2",]))
 colnames(rsub_her2)<-"Rsubread_ERBB2"
 x = c(rep(1, 12), rep(2, 5),rep(3, 12), rep(4, 5))
 #plot(jitter(x,factor=1.5),jitter(c(log2(rsem_her2$TCGA_ERBB2[1:12]+1),log2(rsem_her2$TCGA_ERBB2[13:17]+1),log2(rsub_her2$Rsubread_ERBB2[1:12]+1),log2(rsub_her2$Rsubread_ERBB2[13:17]+1)),factor=1.5), pch=20, cex=2,add=T,col=(x+1%%2)+1,xlab="",ylab="")
-boxplot(log2(rsem_her2$TCGA_ERBB2[1:12]+1),log2(rsem_her2$TCGA_ERBB2[13:17]+1),log2(rsub_her2$Rsubread_ERBB2[1:12]+1),log2(rsub_her2$Rsubread_ERBB2[13:17]+1),xlab='',ylab="log2(Gene counts)",main=paste('Comparing TGCA and Rsubread Pipelines','\n', 'in Differentiating HER2 Overexpression from Controls',sep=''),cex.axis=1.5, cex.lab=1.5,outpch=NA,col='grey',medcol="grey",lwd=4)
-points(jitter(rep(1,12),factor=1.5),log2(rsem_her2$TCGA_ERBB2[1:12]+1),pch=4,cex=2,cex.lab=1.5,col="black")
-points(jitter(rep(2,5),factor=1.5),log2(rsem_her2$TCGA_ERBB2[13:17]+1),pch=4,cex=2,cex.lab=1.5,col='black')
-points(jitter(rep(3,12),factor=1.5),log2(rsub_her2$Rsubread_ERBB2[1:12]+1),pch=4,cex=2,cex.lab=1.5,col='black')
-points(jitter(rep(4,5),factor=1.5),log2(rsub_her2$Rsubread_ERBB2[13:17]+1),pch=4,cex=2,cex.lab=1.5,col='black')
+boxplot(log2(rsem_her2$TCGA_ERBB2[1:12]+1),log2(rsem_her2$TCGA_ERBB2[13:17]+1),log2(rsub_her2$Rsubread_ERBB2[1:12]+1),log2(rsub_her2$Rsubread_ERBB2[13:17]+1),ylab="",range=0,cex.axis=1.5, cex.lab=1.5,outpch=NA,col='grey75',medcol="grey75",lwd=3,border = "grey35")
+sd(tcga_her2_normalized$ERBB2[1:12])/mean(tcga_her2_normalized$ERBB2[1:12])
+sd(tcga_her2_normalized$ERBB2[13:17])/mean(tcga_her2_normalized$ERBB2[13:17])
+#boxplot(log2(rsem_her2$TCGA_ERBB2[1:12]+1),log2(rsem_her2$TCGA_ERBB2[13:17]+1),log2(rsub_her2$Rsubread_ERBB2[1:12]+1),log2(rsub_her2$Rsubread_ERBB2[13:17]+1),xlab='',ylab="log2(Gene counts)",main=paste('Comparing TGCA and Rsubread Pipelines','\n', 'in Differentiating HER2 Overexpression from Controls',sep=''),cex.axis=1.5, cex.lab=1.5,outpch=NA,col='grey',medcol="grey",lwd=4)
+points(jitter(rep(1,12),factor=2),log2(rsem_her2$TCGA_ERBB2[1:12]+1),pch=4,cex=2,cex.lab=1.5,col="black")
+points(jitter(rep(2,5),factor=2),log2(rsem_her2$TCGA_ERBB2[13:17]+1),pch=4,cex=2,cex.lab=1.5,col='black')
+points(jitter(rep(3,12),factor=2),log2(rsub_her2$Rsubread_ERBB2[1:12]+1),pch=4,cex=2,cex.lab=1.5,col='black')
+points(jitter(rep(4,5),factor=2),log2(rsub_her2$Rsubread_ERBB2[13:17]+1),pch=4,cex=2,cex.lab=1.5,col='black')
 
 
 #text(seq(1,6,by=1),par("usr")[3] - 1, labels = names, srt = 45, pos = 1, xpd = TRUE)
@@ -144,16 +149,16 @@ hist(apply(feature,1,sd)/apply(feature,1,mean),main = "Rsubread gene counts",xla
 
 rsem_her2<-data.frame(t(rsem_her2_expected_counts["ERBB2",]))
 colnames(rsem_her2)<-"TCGA_ERBB2"
-sd(rsem_her2$TCGA_ERBB2[1:17])/mean(rsem_her2$TCGA_ERBB2[1:17])#coefficient of variation for ERBB2 gene in TCGA pipeline
-#sd(rsem_her2$TCGA_ERBB2[1:12])/mean(rsem_her2$TCGA_ERBB2[1:12])#coefficien
-#sd(rsem_her2$TCGA_ERBB2[13:17])/mean(rsem_her2$TCGA_ERBB2[13:17])#coefficien
+#sd(rsem_her2$TCGA_ERBB2[1:17])/mean(rsem_her2$TCGA_ERBB2[1:17])#coefficient of variation for ERBB2 gene in TCGA pipeline
+sd(rsem_her2$TCGA_ERBB2[1:12])/mean(rsem_her2$TCGA_ERBB2[1:12])#coefficien
+sd(rsem_her2$TCGA_ERBB2[13:17])/mean(rsem_her2$TCGA_ERBB2[13:17])#coefficien
 #feature<-log2(read.table("GFP18_HER2_Rsubread_geneCounts.txt", sep='\t',header=1, row.names=1, check.names = F))
 
 rsub_her2<-data.frame(t(feature["ERBB2",]))
 colnames(rsub_her2)<-"Rsubread_ERBB2"
-sd(rsub_her2$Rsubread_ERBB2[1:17])/mean(rsub_her2$Rsubread_ERBB2[1:17])##coefficient of variation for ERBB2 gene in Rsubread pipeline
-#sd(rsub_her2$Rsubread_ERBB2[1:12])/mean(rsub_her2$Rsubread_ERBB2[1:12])##coefficient of variation for ERBB2 
-#sd(rsub_her2$Rsubread_ERBB2[13:17])/mean(rsub_her2$Rsubread_ERBB2[13:17])##coefficient of variation for ERBB2 
+#sd(rsub_her2$Rsubread_ERBB2[1:17])/mean(rsub_her2$Rsubread_ERBB2[1:17])##coefficient of variation for ERBB2 gene in Rsubread pipeline
+sd(rsub_her2$Rsubread_ERBB2[1:12])/mean(rsub_her2$Rsubread_ERBB2[1:12])##coefficient of variation for ERBB2 
+sd(rsub_her2$Rsubread_ERBB2[13:17])/mean(rsub_her2$Rsubread_ERBB2[13:17])##coefficient of variation for ERBB2 
 ```
 
 ### Comparing normalized gene counts
@@ -230,15 +235,16 @@ for(i in 13:17){lines(ecdf_all_t[[i]],xlab=NA,ylab = NA,col="brown")}
 #pdf("~/Dropbox/Bioinformatics submission/Resubmission/updated figures/HER2_normalized_expres.pdf",  pointsize = 8)  
 par( mfrow = c( 1, 1 ) )
 par(mar=c(5.6, 4.1, 0.5, 0.5)) 
-boxplot(tcga_her2_log_normalized$ERBB2[1:12],tcga_her2_log_normalized$ERBB2[13:17],rsub_fpkmlog_her2$Rsubread_FPKMlog_ERBB2[1:12],rsub_fpkmlog_her2$Rsubread_FPKMlog_ERBB2[13:17],rsub_tpmlog_her2$Rsubread_TPMlog_ERBB2[1:12],rsub_tpmlog_her2$Rsubread_TPMlog_ERBB2[13:17],ylab="log2(HER2 gene expression values)",range=0,cex.axis=1.5, cex.lab=1.5,outpch=NA,col='grey',medcol="grey",lwd=3)
+boxplot(tcga_her2_log_normalized$ERBB2[1:12],tcga_her2_log_normalized$ERBB2[13:17],rsub_fpkmlog_her2$Rsubread_FPKMlog_ERBB2[1:12],rsub_fpkmlog_her2$Rsubread_FPKMlog_ERBB2[13:17],rsub_tpmlog_her2$Rsubread_TPMlog_ERBB2[1:12],rsub_tpmlog_her2$Rsubread_TPMlog_ERBB2[13:17],ylab="log2(HER2 gene expression values)",range=0,cex.axis=1.5, cex.lab=1.5,outpch=NA,col='grey75',medcol="grey75",lwd=3,border = "grey35")
 names=c("TCGA\nGFP","TCGA\nHER2","Rsubred FPKM\nGFP", "Rsubred FPKM\nHER2","Rsubred TPM\nGFP", "Rsubred TPM\nHER2")
 text(seq(1,6,by=1),par("usr")[3] - 2.5, labels = names, srt = 45, pos = 1, xpd = TRUE)
-points(jitter(rep(1,12)),tcga_her2_log_normalized$ERBB2[1:12],pch=4)
-points(jitter(rep(2,5)),tcga_her2_log_normalized$ERBB2[13:17],pch=4)
-points(jitter(rep(3,12)),rsub_fpkmlog_her2$Rsubread_FPKMlog_ERBB2[1:12],pch=4)
-points(jitter(rep(4,5)),rsub_fpkmlog_her2$Rsubread_FPKMlog_ERBB2[13:17],pch=4)
-points(jitter(rep(5,12)),rsub_tpmlog_her2$Rsubread_TPMlog_ERBB2[1:12],pch=4)
-points(jitter(rep(6,5)),rsub_tpmlog_her2$Rsubread_TPMlog_ERBB2[13:17],pch=4)
+points(jitter(rep(1,12),factor=2),tcga_her2_log_normalized$ERBB2[1:12],pch=4,cex=2,cex.lab=1.5)
+points(jitter(rep(2,5),factor=2),tcga_her2_log_normalized$ERBB2[13:17],pch=4,cex=2,cex.lab=1.5)
+points(jitter(rep(3,12),factor=2),rsub_fpkmlog_her2$Rsubread_FPKMlog_ERBB2[1:12],pch=4,cex=2,cex.lab=1.5)
+points(jitter(rep(4,5),factor=2),rsub_fpkmlog_her2$Rsubread_FPKMlog_ERBB2[13:17],pch=4,cex=2,cex.lab=1.5)
+points(jitter(rep(5,12),factor=2),rsub_tpmlog_her2$Rsubread_TPMlog_ERBB2[1:12],pch=4,cex=2,cex.lab=1.5)
+points(jitter(rep(6,5),factor=2),rsub_tpmlog_her2$Rsubread_TPMlog_ERBB2[13:17],pch=4,cex=2,cex.lab=1.5)
+
 #dev.off()
 
 ###t.test to see if there is significance
@@ -297,7 +303,7 @@ Now, checking boxplots for HER2 pathway activation status predictions
 ##in TCGA BRCA samples####
 #pdf("~/Dropbox/Bioinformatics submission/Resubmission/updated figures/HER2_prediction_box_plot.pdf",  pointsize = 8)  
 par(mfrow = c(1, 1))
-boxplot(ihc_pos$Rsem_log_q_200_f,ihc_neg$Rsem_log_q_200_f,ihc_pos$FPKM_log_q_200_f,ihc_neg$FPKM_log_q_200_f,ihc_pos$TPM_log_q_200_f,ihc_neg$TPM_log_q_200_f,cex.axis=1.5, cex.lab=1.5,outpch=NA,col='grey',medcol="grey",lwd=3,names=c("TCGA\nHER2(+)","TCGA\nHER2(-)","FPKM\nHER2(+)","FPKM\nHER2(-)","TPM\nHER2(+)","TPM\nHER2(-)"),range=0)
+boxplot(ihc_pos$Rsem_log_q_200_f,ihc_neg$Rsem_log_q_200_f,ihc_pos$FPKM_log_q_200_f,ihc_neg$FPKM_log_q_200_f,ihc_pos$TPM_log_q_200_f,ihc_neg$TPM_log_q_200_f,cex.axis=1.5, cex.lab=1.5,outpch=NA,lwd=3,range=0,cex.axis=1.5, cex.lab=1.5,outpch=NA,col='grey75',medcol="grey75",lwd=3,border = "grey35")
 #dev.off()
 
 ##Now, doing a t-test for comparing the Her2(+) and Her2(-) BRCA samples and measuring coefficient of variations for the predictions
@@ -327,18 +333,21 @@ Now checking the total number of zeros per samples in the common  samples accros
 ```{r}
 pancan12_zero<-read.table("~/Desktop/PANCAN12_19583_by_3380_numZeroes.txt",row.names=1,sep='\t',skip = 1)
 colnames(pancan12_zero)<-"PANCAN12"
-pancan20_fpkm_zero<-read.table("~/Desktop/PANCAN20_19583_by_3380_numZeroes.txt",row.names=1,sep='\t',skip = 1)
+#pancan20_fpkm_zero<-read.table("~/Desktop/PANCAN20_19583_by_3380_numZeroes.txt",row.names=1,sep='\t',skip = 1)
 colnames(pancan20_fpkm_zero)<-"FPKM"
 pancan20_tpm_zero<-read.table("~/Desktop/PANCAN20_19583_by_3380_numZeroes.txt",sep='\t',row.names=1,skip = 1)
 colnames(pancan20_tpm_zero)<-"TPM"
 fpkm_tpm<-merge_drop(pancan20_fpkm_zero,pancan20_tpm_zero,by=0)
 all_zeros<-merge_drop(pancan12_zero,pancan20_tpm_zero)
 #3380 samples are common
-par(mfrow = c(1, 3),lwd=4)
-h1<-hist(all_zeros$PANCAN12,xlab='',ylab='',main='',xlim=c(0,8000),ylim=c(0,2000),lwd=4)
-h2<-hist(all_zeros$FPKM,xlab='',ylab='',main='',xlim=c(0,8000),ylim=c(0,2000),lwd=4)
-h3<-hist(all_zeros$TPM,xlab='',ylab='',main='',xlim=c(0,8000),ylim=c(0,2000),lwd=4)
+par(mfrow = c(1, 2),lwd=3)
+h1<-hist(all_zeros$PANCAN12,xlab='',ylab='',main='',xlim=c(0,8000),ylim=c(0,800),lwd=3,breaks = 25)
+abline(v=median(all_zeros$PANCAN12),col="red",lty=2)
 
+#h2<-hist(all_zeros$FPKM,xlab='',ylab='',main='',xlim=c(0,8000),ylim=c(0,2000),lwd=4)
+h3<-hist(all_zeros$TPM,xlab='',ylab='',main='',xlim=c(0,8000),ylim=c(0,800),lwd=3,breaks=25)
+abline(v=median(all_zeros$TPM),col="red",lty=2)
+t.test(all_zeros$PANCAN12,all_zeros$TPM)
 ```
 
 ```{r echo=FALSE}
