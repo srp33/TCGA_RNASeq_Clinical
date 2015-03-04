@@ -1,0 +1,2 @@
+#!/bin/bash
+Rscript --vanilla ../Codes/AnalyzeExpression.R

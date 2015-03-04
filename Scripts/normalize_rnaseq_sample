@@ -1,0 +1,77 @@
+#!/bin/bash
+#
+#$ -cwd
+#$ -N normalize_rnaseq_sample
+#$ -j y
+#$ -P johnsonlab
+#$ -l h_rt=24:00:00
+#$ -pe omp 6
+
+echo "=========================================================="
+echo "Starting on       : $(date)"
+echo "Running on node   : $(hostname)"
+echo "Current job ID    : $JOB_ID"
+echo "Current job name  : $JOB_NAME"
+echo "=========================================================="
+
+set -o errexit
+
+sampleIDFile=$1
+
+tcgaID=$(basename $sampleIDFile)
+analysisID=$(cat $sampleIDFile)
+
+fastqDir=$TMPDIR/FASTQ
+currentDir=$(pwd)
+outRpkmDir=$currentDir/RPKM
+outRpkmLogDir=$currentDir/RPKMlog
+outFeatureCountsDir=$currentDir/FeatureCounts
+outStatsDir=$currentDir/Stats
+inProgressFile=$currentDir/InProgress/$tcgaID
+
+rm -fv $inProgressFile
+touch $inProgressFile
+
+function cleanup {
+  rm -rfv $fastqDir/${analysisID}*
+  rm -rfv $fastqDir/${tcgaID}*
+  rm -fv $inProgressFile
+}
+
+trap 'cleanup' TERM INT EXIT
+
+mkdir -pv $fastqDir/$tcgaID $outRpkmDir $outRpkmLogDir $outFeatureCountsDir $outStatsDir
+
+echo Downloading $tcgaID
+mkdir -p $currentDir/XmlFiles
+$currentDir/cghub/bin/cgquery -o $currentDir/XmlFiles/$tcgaID.xml -a "state=live&library_strategy=RNA-Seq&filetype=fasta&analysis_id=${analysisID}"
+$currentDir/cghub/bin/gtdownload -vv -d $currentDir/XmlFiles/$tcgaID.xml -c $currentDir/cghub.key --max-children 6 -p $fastqDir
+
+echo Rename and extract files $tcgaID
+if [ -f $fastqDir/$analysisID/*.tar.gz ]
+then
+  mv -v $fastqDir/$analysisID/*.tar.gz $fastqDir/$tcgaID.tar.gz
+  tar -zxvf $fastqDir/$tcgaID.tar.gz -C $fastqDir/$tcgaID
+else
+  mv -v $fastqDir/$analysisID/*.tar $fastqDir/$tcgaID.tar
+  tar -xvf $fastqDir/$tcgaID.tar -C $fastqDir/$tcgaID
+fi
+
+fastqFileNamesFile=$fastqDir/$tcgaID/FASTQFiles
+for f in $fastqDir/$tcgaID/*fastq* NULL
+do
+  echo $f >> $fastqFileNamesFile
+done
+
+fastqFilePath1=$(head -n 1 $fastqFileNamesFile)
+fastqFilePath2=$(head -n 2 $fastqFileNamesFile | tail -n 1)
+
+cd $TMPDIR
+$HOME/Software/R-3.1.0/bin/Rscript --vanilla $currentDir/ProcessRnaSeqFeatureCounts.R Genome/genome.fa $fastqFilePath1 $fastqFilePath2 Genome/genes.gtf $fastqDir/$tcgaID $outRpkmDir/$tcgaID $outRpkmLogDir/$tcgaID $outFeatureCountsDir/$tcgaID $outStatsDir/$tcgaID
+
+rm -fv $currentDir/XmlFiles/$tcgaID.xml
+
+echo "=========================================================="
+echo "Finished on       : $(date)"
+echo "=========================================================="
+
