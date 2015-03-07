@@ -4,7 +4,7 @@
 library(plyr)
 
 dirname='.'
-setwd(dirname)
+setwd(dirname)#Set the directory where the clinical data is located for each cancer in separate folder
 filenames<-system("ls */nationwidechildrens.org_clinical_patient*", intern=T)
 
 ##Identifying only unique column names for all the tumor samples available
@@ -23,7 +23,7 @@ for(i in 1:length(filenames)){#####iterating through each of the clinical files 
 rownames(data)<-data[,1]
 #Now, converting short TCGA ids reported in clinical data to long TCGA ids reported in RNA-Seq dataset using R codes
 
-pancan20_featureCounts_5<-as.matrix(read.table("Datasets/PANCAN20.IlluminaHiSeq_RNASeqV2.tumor_Rsubread_FeatureCounts.txt", header=1, row.names=1, nrows=5,sep='\t', check.names = F)) 
+pancan20_featureCounts_5<-as.matrix(read.table("Datasets/PANCAN20.IlluminaHiSeq_RNASeqV2.tumor_Rsubread_FeatureCounts.txt", header=1, row.names=1, nrows=5,sep='\t', check.names = F)) #getting the long TCGA IDs used in RNA-Seq dataset
 sample_names<-colnames(pancan20_featureCounts_5)
 partial_sample_names<-rownames(data)
 counter=0##to check how many replacement has been done

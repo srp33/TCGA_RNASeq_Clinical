@@ -1,12 +1,9 @@
 library(caret)
 
-# inFilePath = commandArgs()[7]
-# outFilePath = commandArgs()[8]
-# inFilePath = "~/Dropbox/TCGA_RNASeq_clinical/Re__BIOINF-2014-2034_-_Major_Revision/LUAD_LUSC.txt"
 outFilePath12 = "Classification_12_LUAD_LUSC_Predictions.txt"
 outFilePath20 = "Classification_20_LUAD_LUSC_Predictions.txt"
 # Read data from file
-setwd("~/Dropbox/TCGA_RNASeq_clinical/Re__BIOINF-2014-2034_-_Major_Revision/")
+setwd("Analysis_datasets")
 luad12=read.table("12_LUAD_t.txt", sep="\t", stringsAsFactors=F, header=TRUE, row.names=1, check.names=F)
 lusc12=read.table("12_LUSC_t.txt", sep="\t", stringsAsFactors=F, header=TRUE, row.names=1, check.names=F)
 lu12=cbind(luad12,lusc12)
@@ -14,7 +11,7 @@ luad20=read.table("20_LUAD_t.txt", sep="\t", stringsAsFactors=F, header=TRUE, ro
 lusc20=read.table("20_LUSC_t.txt", sep="\t", stringsAsFactors=F, header=TRUE, row.names=1, check.names=F)
 lu20=cbind(luad20,lusc20)
 
-#data = read.table(inFilePath, sep="\t", stringsAsFactors=F, header=TRUE, row.names=1, check.names=F)
+
 # only keep the same number of the samples in TCGA processed versus Rsubread processed data
 lu20_f<-lu20[,colnames(lu20)%in%colnames(lu12)]
 
@@ -23,8 +20,6 @@ classes12 = as.factor(as.character(lu12[nrow(lu12),]))
 data12 = t(data.matrix(lu12[-nrow(lu12),]))
 classes20 = as.factor(as.character(lu20_f[nrow(lu20_f),]))
 data20 = t(data.matrix(lu20_f[-nrow(lu20_f),]))
-
-
 
 
 # Retain features that do not have zero variance

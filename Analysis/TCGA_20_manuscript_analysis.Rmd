@@ -36,19 +36,22 @@ First, compare the total mapped read per HMEC samples from TCGA pipeline & Rsubr
 
 ```{r "Reading counts file" ,echo=FALSE}
 #######################comparing gene counts results in our dataset############
-setwd("../Analysis datasets/")
-rsem_her2_expected_counts<-read.table("GFP18_HER2_TCGA_Pipeline_Expected_Gene_Counts.txt", sep='\t', header=1, row.names=1, check.names=F)
-feature<-read.table("GFP18_HER2_Rsubread_geneCounts.txt", sep='\t',header=1, row.names=1, check.names = F)
-TCGA_her2<-read.table("GFP18_HER2_TCGA_Pipeline_Normalized_Genes_Results.txt", sep='\t', header=1, check.names=F)
-rsub_fpkmlog<-read.table("GFP18_HER2_Rsubread_FPKMlog.txt", sep='\t',header=1, row.names=1, check.names = F)
-rsub_fpkm<-read.table("GFP18_HER2_Rsubread_FPKM.txt", sep='\t',header=1, row.names=1, check.names = F)
-rsub_tpmlog<-read.table("GFP18_HER2_Rsubread_TPMlog.txt", sep='\t',header=1, row.names=1, check.names = F)
-rsub_tpm<-read.table("GFP18_HER2_Rsubread_TPM.txt", sep='\t',header=1, row.names=1, check.names = F)
+setwd("Analysis_datasets/")
+rsem_her2_expected_counts<-read.table("GFP18_HER2_TCGA_Pipeline_Expected_Gene_Counts.txt", sep='\t', header=1, row.names=1, check.names=F) #download this form GEO Accession # GSE62820 and unzip
+feature<-read.table("GFP18_HER2_Rsubread_geneCounts.txt", sep='\t',header=1, row.names=1, check.names = F)  #download this form GEO Accession # GSE62820 and unzip
+TCGA_her2<-read.table("GFP18_HER2_TCGA_Pipeline_Normalized_Genes_Results.txt", sep='\t', header=1, check.names=F)#download this form GEO Accession # GSE62820 and unzip
+
+rsub_fpkm<-read.table("GFP18_HER2_Rsubread_FPKM.txt", sep='\t',header=1, row.names=1, check.names = F)#download this form GEO Accession # GSE62820 and unzip
+rsub_fpkmlog<-log2(rsub_fpkm+1)
+#rsub_fpkmlog<-read.table("GFP18_HER2_Rsubread_FPKMlog.txt", sep='\t',header=1, row.names=1, check.names = F)
+rsub_tpm<-read.table("GFP18_HER2_Rsubread_TPM.txt", sep='\t',header=1, row.names=1, check.names = F) #download this form GEO Accession # GSE62820 and unzip
+rsub_tpmlog<-log2(rsub_tpm+1)
+#rsub_tpmlog<-read.table("GFP18_HER2_Rsubread_TPMlog.txt", sep='\t',header=1, row.names=1, check.names = F)
 rsub_preds<-read.table("rsubread_10_14.txt", sep='\t', header=1, row.names=1)
 tcga_preds<-read.table("Rsem_10_14.txt", sep='\t', header=1, row.names=1)
 pancan12_zero<-read.table("PANCAN12_19583_by_3380_numZeroes.txt",row.names=1,sep='\t',skip = 1)
 pancan20_tpm_zero<-read.table("PANCAN20_19583_by_3380_numZeroes.txt",sep='\t',row.names=1,skip = 1)
-clinicals<-t(read.delim('TCGA20_clinical_data_ordered_all_clinical_variables_samples_as_columns.txt',sep='\t',header=1, row.names=1,check.names=F))
+clinicals<-t(read.delim('TCGA20_clinical_data_ordered_all_clinical_variables_samples_as_columns.txt',sep='\t',header=1, row.names=1,check.names=F))# download this form GEO Accession # GSE62944
 data12 = read.table("Classification_12_LUAD_LUSC_Predictions.txt", sep="\t", stringsAsFactors=FALSE, header=TRUE, row.names=1)
 data20 = read.table("Classification_20_LUAD_LUSC_Predictions.txt", sep="\t", stringsAsFactors=FALSE, header=TRUE, row.names=1)
 
@@ -171,16 +174,29 @@ Now checking the consistency of the 'ERBB2' reads from the coefficient of variat
 ##cv across all genes
 par( mfrow = c( 1,2 ) ,lwd=4)
 com_counts_rsem<-rsem_her2_expected_counts[rownames(rsem_her2_expected_counts)%in%rownames(feature),]
-hist(apply(com_counts_rsem,1,sd)/apply(com_counts_rsem,1,mean),main = "TCGA expected counts",xlab = "Coefficient of variation",xlim=c(0,4.5),ylim=c(0,10000),lwd=4,ylab="Number of genes")
+hist(apply(com_counts_rsem[,1:12],1,sd)/apply(com_counts_rsem[,1:12],1,mean),main = "TCGA expected counts",xlab = "Coefficient of variation",xlim=c(0,4.5),ylim=c(0,8000),lwd=4,ylab="Number of genes")
+abline(v=median(na.omit(apply(com_counts_rsem[,1:12],1,sd)/apply(com_counts_rsem[,1:12],1,mean))),lty=2,col='red')
+hist(apply(com_counts_rsem[,13:17],1,sd)/apply(com_counts_rsem[,13:17],1,mean),main = "TCGA expected counts",xlab = "Coefficient of variation",xlim=c(0,4.5),ylim=c(0,4000),lwd=4,ylab="Number of genes")
+abline(v=median(na.omit(apply(com_counts_rsem[,13:17],1,sd)/apply(com_counts_rsem[,13:17],1,mean))),lty=2,col='red')
+
+
+median(na.omit(apply(com_counts_rsem[,1:12],1,sd)/apply(com_counts_rsem[,1:12],1,mean)))
+median(na.omit(apply(com_counts_rsem[,13:17],1,sd)/apply(com_counts_rsem[,13:17],1,mean)))
 com_counts_rsubred<-feature[rownames(feature)%in%rownames(com_counts_rsem),]
-hist(apply(feature,1,sd)/apply(feature,1,mean),main = "Rsubread gene counts",xlab = "Coefficient of variation",xlim=c(0,4.5),ylim=c(0,10000),lwd=4,ylab="Number of genes")
+hist(apply(com_counts_rsubred[,1:12],1,sd)/apply(com_counts_rsubred[,1:12],1,mean),main = "Rsubread gene counts",xlab = "Coefficient of variation",xlim=c(0,4.5),ylim=c(0,10000),lwd=4,ylab="Number of genes")
+abline(v=median(na.omit(apply(com_counts_rsubred[,1:12],1,sd)/apply(com_counts_rsubred[,1:12],1,mean))),lty=2,col='red')
+hist(apply(com_counts_rsubred[,13:17],1,sd)/apply(com_counts_rsubred[,13:17],1,mean),main = "Rsubread gene counts",xlab = "Coefficient of variation",xlim=c(0,4.5),ylim=c(0,10000),lwd=4,ylab="Number of genes")
+abline(v=median(na.omit(apply(com_counts_rsubred[,1:12],1,sd)/apply(com_counts_rsubred[,1:12],1,mean))),lty=2,col='red')
+
+median(na.omit(apply(com_counts_rsubred[,1:12],1,sd)/apply(com_counts_rsubred[,1:12],1,mean)))
+median(na.omit(apply(com_counts_rsubred[,13:17],1,sd)/apply(com_counts_rsubred[,13:17],1,mean)))
 print("Using TCGA expected gene counts")
-print(paste("Total number of genes having coefficient of variation less than or equal to 1 ",sum(na.omit(apply(com_counts_rsem,1,sd)/apply(com_counts_rsem,1,mean)<=1)), sep=':'))
-print(paste("Total number of genes having coefficient of variation more than 1 ",sum(na.omit(apply(com_counts_rsem,1,sd)/apply(com_counts_rsem,1,mean)>1)), sep=':'))
+print(paste("Total number of genes having coefficient of variation less than or equal to 1 ",sum(na.omit(apply(com_counts_rsem,1,sd)/apply(com_counts_rsem,1,mean)<=0.5)), sep=':'))
+print(paste("Total number of genes having coefficient of variation more than 1 ",sum(na.omit(apply(com_counts_rsem,1,sd)/apply(com_counts_rsem,1,mean)>0.5)), sep=':'))
 
 print("Using Rsubread gene counts")
-print(paste("Total number of genes having coefficient of variation less than or equal to 1 ",sum(na.omit(apply(com_counts_rsubred,1,sd)/apply(com_counts_rsubred,1,mean)<=1)), sep=':'))
-print(paste("Total number of genes having coefficient of variation more than 1 ",sum(na.omit(apply(com_counts_rsubred,1,sd)/apply(com_counts_rsubred,1,mean)>1)), sep=':'))
+print(paste("Total number of genes having coefficient of variation less than or equal to 1 ",sum(na.omit(apply(com_counts_rsubred,1,sd)/apply(com_counts_rsubred,1,mean)<=0.5)), sep=':'))
+print(paste("Total number of genes having coefficient of variation more than 1 ",sum(na.omit(apply(com_counts_rsubred,1,sd)/apply(com_counts_rsubred,1,mean)>0.5)), sep=':'))
 
 ```
 Using TCGA pipeline produced expected gene counts data, coefficient of variation in HER2 gene for GFP overexpressed control samples are: `r sd(rsem_her2_expected_counts$ERBB2[13:17])/mean(rsem_her2_expected_counts$ERBB2[13:17])` and HER2 overexpressed samples are: `r sd(rsem_her2_expected_counts$ERBB2[13:17])/mean(rsem_her2_expected_counts$ERBB2[13:17])`
@@ -202,6 +218,11 @@ TCGA_her2_log2<-log2(subset(TCGA_her2_filtered,select=-Gene)+1)
 ####Coefficient of variation in TCGA pipeline processed data
 com_genes_TCGA<-TCGA_her2[rownames(TCGA_her2)%in%rownames(rsub_fpkm),]
 hist(na.omit(apply(com_genes_TCGA,1,sd)/apply(com_genes_TCGA,1,mean)),main = "TCGA Level 3",xlab = "Coefficient of variation",ylim=c(0,12500),lwd=4,ylab="Number of genes", breaks = 20)
+hist(na.omit(apply(com_genes_TCGA[,1:12],1,sd)/apply(com_genes_TCGA[,1:12],1,mean)),main = "TCGA Level 3",xlab = "Coefficient of variation",ylim=c(0,12500),lwd=4,ylab="Number of genes", breaks = 20)
+median(na.omit(apply(com_genes_TCGA[,1:12],1,sd)/apply(com_genes_TCGA[,1:12],1,mean)))
+hist(na.omit(apply(com_genes_TCGA[,13:17],1,sd)/apply(com_genes_TCGA[,13:17],1,mean)),main = "TCGA Level 3",xlab = "Coefficient of variation",ylim=c(0,12500),lwd=4,ylab="Number of genes", breaks = 20)
+median(na.omit(apply(com_genes_TCGA[,1:12],1,sd)/apply(com_genes_TCGA[,1:12],1,mean)))
+median(na.omit(apply(com_genes_TCGA[,13:17],1,sd)/apply(com_genes_TCGA[,13:17],1,mean)))
 print(paste("Total number of genes having coefficient of variation less than or equal to 1 ",sum(na.omit(apply(com_genes_TCGA,1,sd)/apply(com_genes_TCGA,1,mean)<=1)), sep=':'))
 print(paste("Total number of genes having coefficient of variation more than 1 ",sum(na.omit(apply(com_genes_TCGA,1,sd)/apply(com_genes_TCGA,1,mean)>1)), sep=':'))
 
@@ -210,14 +231,17 @@ tcga_her2_normalized<-data.frame(t(TCGA_her2["ERBB2",]))
 
 ####Coefficient of variation in Rsubread pipeline processed data
 com_genes_fpkm<-rsub_fpkm[rownames(rsub_fpkm)%in%rownames(com_genes_TCGA),]
-hist(na.omit(apply(com_genes_fpkm,1,sd)/apply(com_genes_fpkm,1,mean)),main = "Rsubread FPKM",xlab = "Coefficient of variation",ylim=c(0,12500),lwd=4,ylab="Number of genes",breaks=20)
+hist(na.omit(apply(com_genes_fpkm[,13:17],1,sd)/apply(com_genes_fpkm[,13:17],1,mean)),main = "Rsubread FPKM",xlab = "Coefficient of variation",ylim=c(0,12500),lwd=4,ylab="Number of genes",breaks=20)
 print(paste("Total number of genes having coefficient of variation less than or equal to 1 :",sum(na.omit(apply(com_genes_fpkm,1,sd)/apply(com_genes_fpkm,1,mean)<=1)),sep=''))
 print(paste("Total number of genes having coefficient of variation greater than 1 :",sum(na.omit(apply(com_genes_fpkm,1,sd)/apply(com_genes_fpkm,1,mean)>1)),sep=' '))
-
+median((na.omit(apply(com_genes_fpkm[,13:17],1,sd)/apply(com_genes_fpkm[,13:17],1,mean))))
+median((na.omit(apply(com_genes_fpkm[,1:12],1,sd)/apply(com_genes_fpkm[,1:12],1,mean))))
 rsub_fpkmlog_her2<-data.frame(t(rsub_fpkmlog["ERBB2",]))
 rsub_fpkm_her2<-data.frame(t(rsub_fpkm["ERBB2",]))
 com_genes_tpm<-rsub_fpkm[rownames(rsub_tpm)%in%rownames(com_genes_TCGA),]
-hist(na.omit(apply(com_genes_tpm,1,sd)/apply(com_genes_tpm,1,mean)),main = "Rsubread TPM",xlab = "Coefficient of variation",ylim=c(0,12500),lwd=4,ylab="Number of genes")
+hist(na.omit(apply(com_genes_tpm[,13:17],1,sd)/apply(com_genes_tpm[,13:17],1,mean)),main = "Rsubread TPM",xlab = "Coefficient of variation",ylim=c(0,12500),lwd=4,ylab="Number of genes")
+median((na.omit(apply(com_genes_tpm[,1:12],1,sd)/apply(com_genes_tpm[,1:12],1,mean))))
+median((na.omit(apply(com_genes_tpm[,13:17],1,sd)/apply(com_genes_tpm[,13:17],1,mean))))
 print(paste("Total number of genes having coefficient of variation less than or equal to 1: ",sum(na.omit(apply(com_genes_tpm,1,sd)/apply(com_genes_tpm,1,mean)<=1)),sep=" "))
 
 print(paste("Total number of genes having coefficient of variation less than or equal to 1: ",sum(na.omit(apply(com_genes_tpm,1,sd)/apply(com_genes_tpm,1,mean)>1)),sep=" "))
