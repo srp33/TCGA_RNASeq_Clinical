@@ -23,8 +23,8 @@ analysisID=$(cat $sampleIDFile)
 
 fastqDir=$TMPDIR/FASTQ
 currentDir=$(pwd)
-outRpkmDir=$currentDir/RPKM
-outRpkmLogDir=$currentDir/RPKMlog
+outFpkmDir=$currentDir/FPKM
+outFpkmLogDir=$currentDir/FPKMlog
 outFeatureCountsDir=$currentDir/FeatureCounts
 outStatsDir=$currentDir/Stats
 inProgressFile=$currentDir/InProgress/$tcgaID
@@ -40,7 +40,7 @@ function cleanup {
 
 trap 'cleanup' TERM INT EXIT
 
-mkdir -pv $fastqDir/$tcgaID $outRpkmDir $outRpkmLogDir $outFeatureCountsDir $outStatsDir
+mkdir -pv $fastqDir/$tcgaID $outFpkmDir $outFpkmLogDir $outFeatureCountsDir $outStatsDir
 
 echo Downloading $tcgaID
 mkdir -p $currentDir/XmlFiles
@@ -67,7 +67,7 @@ fastqFilePath1=$(head -n 1 $fastqFileNamesFile)
 fastqFilePath2=$(head -n 2 $fastqFileNamesFile | tail -n 1)
 
 cd $TMPDIR
-$HOME/Software/R-3.1.0/bin/Rscript --vanilla $currentDir/ProcessRnaSeqFeatureCounts.R Genome/genome.fa $fastqFilePath1 $fastqFilePath2 Genome/genes.gtf $fastqDir/$tcgaID $outRpkmDir/$tcgaID $outRpkmLogDir/$tcgaID $outFeatureCountsDir/$tcgaID $outStatsDir/$tcgaID
+$HOME/Software/R-3.1.0/bin/Rscript --vanilla $currentDir/ProcessRnaSeqFeatureCounts.R Genome/genome.fa $fastqFilePath1 $fastqFilePath2 Genome/genes.gtf $fastqDir/$tcgaID $outFpkmDir/$tcgaID $outFpkmLogDir/$tcgaID $outFeatureCountsDir/$tcgaID $outStatsDir/$tcgaID
 
 rm -fv $currentDir/XmlFiles/$tcgaID.xml
 

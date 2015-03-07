@@ -2,7 +2,7 @@
 
 set -o errexit
 
-mkdir -p DownloadSamples
+mkdir -p DownloadSamples DownloadSamples CancerTypes Temp FeatureCounts InProgress
 
 cghub/bin/cgquery -o Query.xml -a "state=live&library_strategy=RNA-Seq&filetype=fasta&sample_type=0*"
 

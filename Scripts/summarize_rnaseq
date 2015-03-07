@@ -55,7 +55,7 @@ function matricize {
   rm -rf $tempSummDir
 }
 
-#buildCancerTypesFile
+buildCancerTypesFile
 
 matricize RPKMlog &
 matricize RPKM &
