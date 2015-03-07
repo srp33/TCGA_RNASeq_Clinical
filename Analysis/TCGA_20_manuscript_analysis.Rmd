@@ -10,8 +10,8 @@ start_time <- Sys.time()
 ## Analysis of data as in the manuscript "RNA-Sequencing data for 7706 tumor samples across 20 cancer types from The Cancer Genome Atlas"" 
 
 * Manually download the GFP and HER2 overexpressed in human mammary epithelial cells RNA-Seq data from GEO (Accession#GSE62820)
-* Manually download the HER2 predictions using RSEM-log2, Rsubread-FPKM-log2 and Rsubread-TPM-log2 TCGA data submitted with manuscript   
-* Install and load the required package for analysis
+* Manually download the compiled clinical variable dataaset from GEO (Accession#GSE62944)    
+* Install and load the required R package for analysis "stats", "ROCR", "pROC".
 ```{r include=FALSE}
 
 if (!require("stats")) {
@@ -27,33 +27,28 @@ if (!require("pROC")) {
    library(stats)
    }
 ```
-### 'Gene count' level analysis
-
-Comparing gene counts results using GFP control protein and ERBB2 protein overexpressed human mammary epithelial cell samples. TCGA's pipeline and Subread pipelines were used to generate raw gene level counts. Log based 2 gene counts are used to differentiate between control and ERBB2 overexpressed samples.
-
-First, compare the total mapped read per HMEC samples from TCGA pipeline & Rsubread pipeline. Raw gene counts for GFP and HER2 HMEC samples were processed via TCGA pipeline (expected counts) and Rsubread pipeline (integer based), This analysis is done before any normalization method was applied.
 
 
 ```{r "Reading counts file" ,echo=FALSE}
 #######################comparing gene counts results in our dataset############
-setwd("Analysis_datasets/")
+setwd("~/Dropbox/TCGA_RNASeq_clinical/Analysis_datasets/")
 rsem_her2_expected_counts<-read.table("GFP18_HER2_TCGA_Pipeline_Expected_Gene_Counts.txt", sep='\t', header=1, row.names=1, check.names=F) #download this form GEO Accession # GSE62820 and unzip
 feature<-read.table("GFP18_HER2_Rsubread_geneCounts.txt", sep='\t',header=1, row.names=1, check.names = F)  #download this form GEO Accession # GSE62820 and unzip
 TCGA_her2<-read.table("GFP18_HER2_TCGA_Pipeline_Normalized_Genes_Results.txt", sep='\t', header=1, check.names=F)#download this form GEO Accession # GSE62820 and unzip
 
 rsub_fpkm<-read.table("GFP18_HER2_Rsubread_FPKM.txt", sep='\t',header=1, row.names=1, check.names = F)#download this form GEO Accession # GSE62820 and unzip
 rsub_fpkmlog<-log2(rsub_fpkm+1)
-#rsub_fpkmlog<-read.table("GFP18_HER2_Rsubread_FPKMlog.txt", sep='\t',header=1, row.names=1, check.names = F)
+
 rsub_tpm<-read.table("GFP18_HER2_Rsubread_TPM.txt", sep='\t',header=1, row.names=1, check.names = F) #download this form GEO Accession # GSE62820 and unzip
 rsub_tpmlog<-log2(rsub_tpm+1)
-#rsub_tpmlog<-read.table("GFP18_HER2_Rsubread_TPMlog.txt", sep='\t',header=1, row.names=1, check.names = F)
-rsub_preds<-read.table("rsubread_10_14.txt", sep='\t', header=1, row.names=1)
-tcga_preds<-read.table("Rsem_10_14.txt", sep='\t', header=1, row.names=1)
-pancan12_zero<-read.table("PANCAN12_19583_by_3380_numZeroes.txt",row.names=1,sep='\t',skip = 1)
-pancan20_tpm_zero<-read.table("PANCAN20_19583_by_3380_numZeroes.txt",sep='\t',row.names=1,skip = 1)
-clinicals<-t(read.delim('TCGA20_clinical_data_ordered_all_clinical_variables_samples_as_columns.txt',sep='\t',header=1, row.names=1,check.names=F))# download this form GEO Accession # GSE62944
-data12 = read.table("Classification_12_LUAD_LUSC_Predictions.txt", sep="\t", stringsAsFactors=FALSE, header=TRUE, row.names=1)
-data20 = read.table("Classification_20_LUAD_LUSC_Predictions.txt", sep="\t", stringsAsFactors=FALSE, header=TRUE, row.names=1)
+
+rsub_preds<-read.table("rsubread_10_14.txt", sep='\t', header=1, row.names=1)# File is at Analysis_datasets
+tcga_preds<-read.table("Rsem_10_14.txt", sep='\t', header=1, row.names=1) # File is at Analysis_datasets
+pancan12_zero<-read.table("PANCAN12_19583_by_3380_numZeroes.txt",row.names=1,sep='\t',skip = 1)# File is at Analysis_datasets
+pancan20_tpm_zero<-read.table("PANCAN20_19583_by_3380_numZeroes.txt",sep='\t',row.names=1,skip = 1)# File is at Analysis_datasets
+clinicals<-t(read.delim('TCGA20_clinical_data_ordered_all_clinical_variables_samples_as_columns.txt',sep='\t',header=1, row.names=1,check.names=F))# download this form GEO Accession # GSE62944 and unzip
+data12 = read.table("Classification_12_LUAD_LUSC_Predictions.txt", sep="\t", stringsAsFactors=FALSE, header=TRUE, row.names=1) # File is at Analysis_datasets
+data20 = read.table("Classification_20_LUAD_LUSC_Predictions.txt", sep="\t", stringsAsFactors=FALSE, header=TRUE, row.names=1)# File is at Analysis_datasets
 
 standardized_mean<-function(m.1,sd.1,n.1,m.2,sd.2,n.2){
   sd_pooled=sqrt(((n.1-1)*sd.1^2+(n.2-1)*sd.2^2)/(n.1+n.2-2))
@@ -91,9 +86,13 @@ text(0.5, 0.00, labels=paste("AUC: ", midAuc, " (", lowerBoundAuc, "-", upperBou
   par(mar=c(5.1, 4.1, 2.1, 2.1))
 }
 ```
+### 'Gene count' level analysis
 
-First, computing the empiric cumulative distribution for all samples from two pipelines
-```{r}
+We compared gene counts results using GFP control protein and ERBB2 protein overexpressed human mammary epithelial cell samples. TCGA's pipeline and Rsubread pipelines were used to generate raw gene level counts. Log based 2 gene counts are used to differentiate between control and ERBB2 overexpressed samples.
+
+First, we computed the empiric cumulative distribution for all samples from two pipelines. Second, we compared the total mapped read per HMEC samples from TCGA pipeline & Rsubread pipeline. Raw gene counts for GFP and HER2 HMEC samples were processed via TCGA pipeline (expected counts) and Rsubread pipeline (integer based), This analysis is done before any normalization method was applied.
+
+```{r echo=FALSE}
 ##########computing the empiric cumulative distribution per sample overlaied on same graph######## 
 ###using TCGA pipelined aligned data
 ecdf_all_ex<-apply(log2(rsem_her2_expected_counts+1),2,ecdf)
@@ -108,10 +107,6 @@ plot(ecdf_all[[1]],xlab="log2(Total mapped reads)",ylab="Cumulative proportion",
 for(i in 2:12){lines(ecdf_all[[i]],xlab=NA,ylab = NA,col="blue")}
 for(i in 13:17){lines(ecdf_all[[i]],xlab=NA,ylab = NA,col="brown")}
 
-```
-
-Second, we also boxploted the total number of mapped reads per condition (control versus HER2 overexpressed)
-```{r}
 ############computing total number of read counts per samples and plotting them as dot plots####
 expected_counts<-apply(rsem_her2_expected_counts,2,sum)
 feature_counts<-apply(feature,2,sum)
@@ -168,45 +163,16 @@ standardized_mean(m.1=mean((log2(rsub_her2$ERBB2[13:17]+1))),sd.1=sd((log2(rsub_
 
 Both methods find significant differences in the ERBB2 read counts between GFP control and HER2 samples. However, coefficient of variable is less with Rsubread data than TCGA pipeline processed data. Moreover, standardized mean differences in ERBB2 gene counts between HER2 activated and control samples using TCGA pipeline is smaller than the Rsubread pipeline processed data.
 
-Now checking the consistency of the 'ERBB2' reads from the coefficient of variation analysis in all genes.
 
-```{r echo=FALSE}
-##cv across all genes
-par( mfrow = c( 1,2 ) ,lwd=4)
-com_counts_rsem<-rsem_her2_expected_counts[rownames(rsem_her2_expected_counts)%in%rownames(feature),]
-hist(apply(com_counts_rsem[,1:12],1,sd)/apply(com_counts_rsem[,1:12],1,mean),main = "TCGA expected counts",xlab = "Coefficient of variation",xlim=c(0,4.5),ylim=c(0,8000),lwd=4,ylab="Number of genes")
-abline(v=median(na.omit(apply(com_counts_rsem[,1:12],1,sd)/apply(com_counts_rsem[,1:12],1,mean))),lty=2,col='red')
-hist(apply(com_counts_rsem[,13:17],1,sd)/apply(com_counts_rsem[,13:17],1,mean),main = "TCGA expected counts",xlab = "Coefficient of variation",xlim=c(0,4.5),ylim=c(0,4000),lwd=4,ylab="Number of genes")
-abline(v=median(na.omit(apply(com_counts_rsem[,13:17],1,sd)/apply(com_counts_rsem[,13:17],1,mean))),lty=2,col='red')
-
-
-median(na.omit(apply(com_counts_rsem[,1:12],1,sd)/apply(com_counts_rsem[,1:12],1,mean)))
-median(na.omit(apply(com_counts_rsem[,13:17],1,sd)/apply(com_counts_rsem[,13:17],1,mean)))
-com_counts_rsubred<-feature[rownames(feature)%in%rownames(com_counts_rsem),]
-hist(apply(com_counts_rsubred[,1:12],1,sd)/apply(com_counts_rsubred[,1:12],1,mean),main = "Rsubread gene counts",xlab = "Coefficient of variation",xlim=c(0,4.5),ylim=c(0,10000),lwd=4,ylab="Number of genes")
-abline(v=median(na.omit(apply(com_counts_rsubred[,1:12],1,sd)/apply(com_counts_rsubred[,1:12],1,mean))),lty=2,col='red')
-hist(apply(com_counts_rsubred[,13:17],1,sd)/apply(com_counts_rsubred[,13:17],1,mean),main = "Rsubread gene counts",xlab = "Coefficient of variation",xlim=c(0,4.5),ylim=c(0,10000),lwd=4,ylab="Number of genes")
-abline(v=median(na.omit(apply(com_counts_rsubred[,1:12],1,sd)/apply(com_counts_rsubred[,1:12],1,mean))),lty=2,col='red')
-
-median(na.omit(apply(com_counts_rsubred[,1:12],1,sd)/apply(com_counts_rsubred[,1:12],1,mean)))
-median(na.omit(apply(com_counts_rsubred[,13:17],1,sd)/apply(com_counts_rsubred[,13:17],1,mean)))
-print("Using TCGA expected gene counts")
-print(paste("Total number of genes having coefficient of variation less than or equal to 1 ",sum(na.omit(apply(com_counts_rsem,1,sd)/apply(com_counts_rsem,1,mean)<=0.5)), sep=':'))
-print(paste("Total number of genes having coefficient of variation more than 1 ",sum(na.omit(apply(com_counts_rsem,1,sd)/apply(com_counts_rsem,1,mean)>0.5)), sep=':'))
-
-print("Using Rsubread gene counts")
-print(paste("Total number of genes having coefficient of variation less than or equal to 1 ",sum(na.omit(apply(com_counts_rsubred,1,sd)/apply(com_counts_rsubred,1,mean)<=0.5)), sep=':'))
-print(paste("Total number of genes having coefficient of variation more than 1 ",sum(na.omit(apply(com_counts_rsubred,1,sd)/apply(com_counts_rsubred,1,mean)>0.5)), sep=':'))
-
-```
 Using TCGA pipeline produced expected gene counts data, coefficient of variation in HER2 gene for GFP overexpressed control samples are: `r sd(rsem_her2_expected_counts$ERBB2[13:17])/mean(rsem_her2_expected_counts$ERBB2[13:17])` and HER2 overexpressed samples are: `r sd(rsem_her2_expected_counts$ERBB2[13:17])/mean(rsem_her2_expected_counts$ERBB2[13:17])`
 
 Using Rsubreaad pipeline produced expected gene counts data, coefficient of variation in HER2 gene for GFP overexpressed control samples are: `r sd(rsub_her2$ERBB2[1:12])/mean(rsub_her2$ERBB2[1:12])` and HER2 overexpressed samples are: `r sd(rsub_her2$ERBB2[13:17])/mean(rsub_her2$ERBB2[13:17])`
 
-
-
 ### "Normalized gene counts" level analysis
-Manually download the processed files for this analysis from GEO (Accession#GSE62820)
+
+We compared normalized gene counts results using GFP control protein and ERBB2 protein overexpressed human mammary epithelial cell samples. Log based 2 gene expression of the TCGA Level 3 data, Rsubread processed FPKM and TPM data are used for this analysis.
+
+First, we computed the consistency of the gene expression across common genes after normalization. Second, empiric cumulative distribution for all samples from two pipelines. Second, we compared the total mapped read per HMEC samples from TCGA pipeline & Rsubread pipeline. Third, we compared HER2(ERBB2) gene expressions between control and HER2-overexpressed samples.
 ```{r echo=FALSE}
 #######################comparing gene counts results ############
 par( mfrow = c( 1,3 ) ,lwd=4)
@@ -219,32 +185,32 @@ TCGA_her2_log2<-log2(subset(TCGA_her2_filtered,select=-Gene)+1)
 com_genes_TCGA<-TCGA_her2[rownames(TCGA_her2)%in%rownames(rsub_fpkm),]
 hist(na.omit(apply(com_genes_TCGA,1,sd)/apply(com_genes_TCGA,1,mean)),main = "TCGA Level 3",xlab = "Coefficient of variation",ylim=c(0,12500),lwd=4,ylab="Number of genes", breaks = 20)
 hist(na.omit(apply(com_genes_TCGA[,1:12],1,sd)/apply(com_genes_TCGA[,1:12],1,mean)),main = "TCGA Level 3",xlab = "Coefficient of variation",ylim=c(0,12500),lwd=4,ylab="Number of genes", breaks = 20)
-median(na.omit(apply(com_genes_TCGA[,1:12],1,sd)/apply(com_genes_TCGA[,1:12],1,mean)))
+print(paste("Coefficient of variation in TCGA Level 3 data across 19585 genes in the control samples:",median(na.omit(apply(com_genes_TCGA[,1:12],1,sd)/apply(com_genes_TCGA[,1:12],1,mean))),sep=" "))
+
 hist(na.omit(apply(com_genes_TCGA[,13:17],1,sd)/apply(com_genes_TCGA[,13:17],1,mean)),main = "TCGA Level 3",xlab = "Coefficient of variation",ylim=c(0,12500),lwd=4,ylab="Number of genes", breaks = 20)
-median(na.omit(apply(com_genes_TCGA[,1:12],1,sd)/apply(com_genes_TCGA[,1:12],1,mean)))
-median(na.omit(apply(com_genes_TCGA[,13:17],1,sd)/apply(com_genes_TCGA[,13:17],1,mean)))
-print(paste("Total number of genes having coefficient of variation less than or equal to 1 ",sum(na.omit(apply(com_genes_TCGA,1,sd)/apply(com_genes_TCGA,1,mean)<=1)), sep=':'))
-print(paste("Total number of genes having coefficient of variation more than 1 ",sum(na.omit(apply(com_genes_TCGA,1,sd)/apply(com_genes_TCGA,1,mean)>1)), sep=':'))
+print(paste("Coefficient of variation in TCGA Level 3 data across 19585 genes in the HER2-overexpressed samples:",median(na.omit(apply(com_genes_TCGA[,13:17],1,sd)/apply(com_genes_TCGA[,13:17],1,mean))),sep=" "))
 
 tcga_her2_normalized<-data.frame(t(TCGA_her2["ERBB2",]))
-#tcga_her2_log_normalized<-data.frame(t(TCGA_her2["ERBB2",]))
+
 
 ####Coefficient of variation in Rsubread pipeline processed data
 com_genes_fpkm<-rsub_fpkm[rownames(rsub_fpkm)%in%rownames(com_genes_TCGA),]
 hist(na.omit(apply(com_genes_fpkm[,13:17],1,sd)/apply(com_genes_fpkm[,13:17],1,mean)),main = "Rsubread FPKM",xlab = "Coefficient of variation",ylim=c(0,12500),lwd=4,ylab="Number of genes",breaks=20)
-print(paste("Total number of genes having coefficient of variation less than or equal to 1 :",sum(na.omit(apply(com_genes_fpkm,1,sd)/apply(com_genes_fpkm,1,mean)<=1)),sep=''))
-print(paste("Total number of genes having coefficient of variation greater than 1 :",sum(na.omit(apply(com_genes_fpkm,1,sd)/apply(com_genes_fpkm,1,mean)>1)),sep=' '))
-median((na.omit(apply(com_genes_fpkm[,13:17],1,sd)/apply(com_genes_fpkm[,13:17],1,mean))))
-median((na.omit(apply(com_genes_fpkm[,1:12],1,sd)/apply(com_genes_fpkm[,1:12],1,mean))))
+
+print(paste("Coefficient of variation in Rsubread FPKM normalized data across 19585 genes in the control samples:",median((na.omit(apply(com_genes_fpkm[,1:12],1,sd)/apply(com_genes_fpkm[,1:12],1,mean)))),sep=''))
+
+print(paste("Coefficient of variation in Rsubread FPKM normalized data across 19585 genes in the HER2-overexpressed samples:",median((na.omit(apply(com_genes_fpkm[,13:17],1,sd)/apply(com_genes_fpkm[,13:17],1,mean)))),sep=''))
+
+
 rsub_fpkmlog_her2<-data.frame(t(rsub_fpkmlog["ERBB2",]))
 rsub_fpkm_her2<-data.frame(t(rsub_fpkm["ERBB2",]))
 com_genes_tpm<-rsub_fpkm[rownames(rsub_tpm)%in%rownames(com_genes_TCGA),]
-hist(na.omit(apply(com_genes_tpm[,13:17],1,sd)/apply(com_genes_tpm[,13:17],1,mean)),main = "Rsubread TPM",xlab = "Coefficient of variation",ylim=c(0,12500),lwd=4,ylab="Number of genes")
-median((na.omit(apply(com_genes_tpm[,1:12],1,sd)/apply(com_genes_tpm[,1:12],1,mean))))
-median((na.omit(apply(com_genes_tpm[,13:17],1,sd)/apply(com_genes_tpm[,13:17],1,mean))))
-print(paste("Total number of genes having coefficient of variation less than or equal to 1: ",sum(na.omit(apply(com_genes_tpm,1,sd)/apply(com_genes_tpm,1,mean)<=1)),sep=" "))
 
-print(paste("Total number of genes having coefficient of variation less than or equal to 1: ",sum(na.omit(apply(com_genes_tpm,1,sd)/apply(com_genes_tpm,1,mean)>1)),sep=" "))
+hist(na.omit(apply(com_genes_tpm[,13:17],1,sd)/apply(com_genes_tpm[,13:17],1,mean)),main = "Rsubread TPM",xlab = "Coefficient of variation",ylim=c(0,12500),lwd=4,ylab="Number of genes")
+
+print(paste("Coefficient of variation in Rsubread TPM normalized data across 19585 genes in the control samples:",median((na.omit(apply(com_genes_tpm[,1:12],1,sd)/apply(com_genes_tpm[,1:12],1,mean)))),sep=''))
+
+print(paste("Coefficient of variation in Rsubread TPM normalized data across 19585 genes in the HER2-overexpressed samples:",median((na.omit(apply(com_genes_tpm[,13:17],1,sd)/apply(com_genes_tpm[,13:17],1,mean)))),sep=''))
 
 rsub_tpm_her2<-data.frame(t(rsub_tpm["ERBB2",]))
 rsub_tpmlog_her2<-data.frame(t(rsub_tpmlog["ERBB2",]))
@@ -269,10 +235,10 @@ for(i in 13:17){lines(ecdf_all_t[[i]],xlab=NA,ylab = NA,col="brown")}
 
 ###Creating boxplots of the normalized ERBB2 expression   
 par( mfrow = c( 1, 1 ) )
-par(mar=c(5.6, 4.1, 0.5, 0.5)) 
+par(mar=c(5, 4.5, 3.5, 0.5)) 
 boxplot(log2(tcga_her2_normalized$ERBB2[1:12]+1),log2(tcga_her2_normalized$ERBB2[13:17]+1),rsub_fpkmlog_her2$ERBB2[1:12],rsub_fpkmlog_her2$ERBB2[13:17],rsub_tpmlog_her2$ERBB2[1:12],rsub_tpmlog_her2$ERBB2[13:17],ylab="log2(HER2 gene expression values)",main="Comparing HER2 normalized expression between\n control and her2 samples",range=0,cex.axis=1.5, cex.lab=1.5,outpch=NA,col='grey75',medcol="grey75",lwd=4,border = "grey35")
 names=c("TCGA\nGFP","TCGA\nHER2","Rsubred FPKM\nGFP", "Rsubred FPKM\nHER2","Rsubred TPM\nGFP", "Rsubred TPM\nHER2")
-text(seq(1,6,by=1),par("usr")[3] - 2.5, labels = names, srt = 45, pos = 1, xpd = TRUE)
+text(seq(1,6,by=1),par("usr")[3] - 2, labels = names, srt = 45, pos = 1, xpd = TRUE)
 points(jitter(rep(1,12),factor=2),log2(tcga_her2_normalized$ERBB2[1:12]+1),pch=4,cex=2,cex.lab=1.5)
 points(jitter(rep(2,5),factor=2),log2(tcga_her2_normalized$ERBB2[13:17]+1),pch=4,cex=2,cex.lab=1.5)
 points(jitter(rep(3,12),factor=2),rsub_fpkmlog_her2$ERBB2[1:12],pch=4,cex=2,cex.lab=1.5)
@@ -302,7 +268,7 @@ using Rsubread FPKM pipeline is: `r sd(rsub_fpkm_her2$ERBB2[13:17])/mean(rsub_fp
 
 ###Assessing the effect of upper quartile normalization
 Now checking the total number of zeros per samples in the common  samples accross PanCan12 and our datasets
-```{r}
+```{r echo=FALSE}
 colnames(pancan12_zero)<-"PANCAN12"
 colnames(pancan20_tpm_zero)<-"TPM"
 all_zeros<-merge_drop(pancan12_zero,pancan20_tpm_zero)
@@ -315,13 +281,13 @@ abline(v=median(all_zeros$TPM),col="red",lty=2)
 t.test(all_zeros$PANCAN12,all_zeros$TPM)
 ```
 
-### Comparing Her2 Predictions
+### Comparing Her2 predictions
 
 We predicted HER2 pathway using our overexpressed samples in human mammary epithelial cells(HMECs) in TCGA breast cancer samples. We used TCGA pipeline processed HMEC datasets on TCGA pipeline processed TCGA BRCA samples and Rsubread pipelined processed HMEC datasets on Rsubread processed TCGA BRCA samples. We only compared BRCA samples that are common and we have her2 status confirmed by immunohistochemistry. Our goal here is to compare how well these two pipeline and normalization method differenciate HER2 pathway activity predictions where we know the status of HER2 overexpression.
 
 We removed all the genes that had zero expression accross all HMEC samples and TCGA samples. Then, we used quantile normalization method to adjust for batch variation between our HMEC training samples and TCGA BRCA samples. We used binary regression model developed by West et al to generate HER2 signatures using top 200 genes. The signature generated from each pipeline processed data was used to predict on TCGA BRCA RNA-Seq sample processed by the same pipeline. Both FPKM-log2 and TPM-log2 normalized Rsubread processed predictions were compiled to one file and TCGA upper-quantile log-2 normalized pipeline procssed predictions were extracted to another file for analysis.
 
-```{r}
+```{r echo=FALSE}
 #############Predicted HER2 pathway activity analysis#############################################
 
 all_preds<-merge_drop(rsub_preds,tcga_preds,by=0)
@@ -336,27 +302,29 @@ ihc_pos<-subset(all,all$her2_status_by_ihc=="Positive")
 ```
 `r length(rownames(ihc_pos))` HER2 negative and `r length(rownames(ihc_pos))` HER2 positive samples are being compared here. 
 
-Now, checking boxplots for HER2 pathway activation status predictions
+We compared the boxplots for HER2 pathway activation status predictions between HER2(+) and HER2(-) BRCA samples.
 
-```{r}
+```{r echo=FALSE}
 ##############boxplot of ranked estimated HER2 pathway activity
 ##in TCGA BRCA samples####
 par(mfrow = c(1, 1))
-boxplot(ihc_pos$Rsem_log_q_200_f,ihc_neg$Rsem_log_q_200_f,ihc_pos$FPKM_log_q_200_f,ihc_neg$FPKM_log_q_200_f,ihc_pos$TPM_log_q_200_f,ihc_neg$TPM_log_q_200_f,cex.axis=1.5, cex.lab=1.5,outpch=NA,range=0,cex.axis=1.5, cex.lab=1.5,outpch=NA,col='grey75',medcol="grey35",lwd=4,border = "grey35", ylab="Rank-based estimate of HER2 activation")
+par(mar=c(5, 4.6, 2.5, 0.6)) # figure margins
+boxplot(ihc_pos$Rsem_log_q_200_f,ihc_neg$Rsem_log_q_200_f,ihc_pos$FPKM_log_q_200_f,ihc_neg$FPKM_log_q_200_f,ihc_pos$TPM_log_q_200_f,ihc_neg$TPM_log_q_200_f,cex.axis=1.5, cex.lab=1.5,outpch=NA,range=0,cex.axis=1, cex.lab=0.7,outpch=NA,col='grey75',medcol="grey5",lwd=4,border = "grey5", main="Comparison of rank-based estimate \nof HER2 activation",ylab="Ranked HER2 prediction")
 names=c("TCGA\nLevel3\nHER2(+)","TCGA\nLevel3\nHER2(-)","Rsubred\nFPKM\nHER2(+)", "Rsubred\nFPKM\nHER2(-)","Rsubred\nTPM\nHER2(+)", "Rsubred\nTPM\nHER2(-)")
-text(seq(1,6,by=1),par("usr")[3] - 2.5, labels = names, srt = 45, pos = 1, xpd = TRUE)
+text(seq(1,6,by=1),par("usr")[3] - 4.5, labels = names, srt = 45, pos = 1, xpd = TRUE)
 ihc_neg_t<-subset(common_all,common_all$her2_status_by_ihc=="Negative")
 ihc_pos_t<-subset(common_all,common_all$her2_status_by_ihc=="Positive")
 
 ##coefficient of variation in TCGA pipeline processed HER2 predictions
-sd(ihc_neg_t$Rsem_log_q_200_f)/mean(ihc_neg_t$Rsem_log_q_200_f)
-sd(ihc_pos_t$Rsem_log_q_200_f)/mean(ihc_pos_t$Rsem_log_q_200_f)
+print(paste("Coefficient of variation in TCGA pipeline processed HER2 predictions in HER2(-) BRCA samples",sd(ihc_neg_t$Rsem_log_q_200_f)/mean(ihc_neg_t$Rsem_log_q_200_f),sep=' '))
+print(paste("Coefficient of variation in TCGA pipeline processed HER2 predictions in HER2(+) BRCA samples",sd(ihc_pos_t$Rsem_log_q_200_f)/mean(ihc_pos_t$Rsem_log_q_200_f),sep=' '))
+
 ##coefficient of variation in Rsubread FPKM pipeline processed HER2 predictions
-sd(ihc_neg_t$FPKM_log_q_200_f)/mean(ihc_neg_t$FPKM_log_q_200_f)
-sd(ihc_pos_t$FPKM_log_q_200_f)/mean(ihc_pos_t$FPKM_log_q_200_f)
+print(paste("Coefficient of variation in Rsubread FPKM processed HER2 predictions in HER2(-) BRCA samples",sd(ihc_neg_t$FPKM_log_q_200_f)/mean(ihc_neg_t$FPKM_log_q_200_f),sep="  "))
+print(paste("Coefficient of variation in Rsubread FPKM processed HER2 predictions in HER2(+) BRCA samples",sd(ihc_pos_t$FPKM_log_q_200_f)/mean(ihc_pos_t$FPKM_log_q_200_f),sep="  "))
 ##coefficient of variation in Rsubread TPM pipeline processed HER2 predictions
-sd(ihc_neg_t$TPM_log_q_200_f)/mean(ihc_neg_t$TPM_log_q_200_f)
-sd(ihc_pos_t$TPM_log_q_200_f)/mean(ihc_pos_t$TPM_log_q_200_f)
+print(paste("Coefficient of variation in Rsubread TPM  processed HER2 predictions in HER2(-) BRCA samples",sd(ihc_neg_t$TPM_log_q_200_f)/mean(ihc_neg_t$TPM_log_q_200_f),sep="  "))
+print(paste("Coefficient of variation in Rsubread TPM processed HER2 predictions in HER2(+) BRCA samples",sd(ihc_pos_t$TPM_log_q_200_f)/mean(ihc_pos_t$TPM_log_q_200_f),sep="  "))
 
 ##Calculating standardized mean differences between the HER2(+) and HER2(-) groups
 print(paste("Standardized mean difference in predicrion between HER2 (+) and HER2 (-) samples for TCGA Level 3 data :",standardized_mean(m.1=mean(ihc_pos_t$Rsem_log_q_200_f),sd.1=sd(ihc_pos_t$Rsem_log_q_200_f),n.1=length(ihc_pos_t$Rsem_log_q_200_f),m.2=mean(ihc_neg_t$Rsem_log_q_200_f),sd.2=sd(ihc_neg_t$Rsem_log_q_200_f),n.2=length(ihc_neg_t$Rsem_log_q_200_f)),sep=' '))
@@ -372,15 +340,15 @@ t.test(ihc_pos_t$TPM_log_q_200_f,ihc_neg_t$TPM_log_q_200_f)#For Rsubread TPM:p-v
 
 ```
 
-Both pipelines were significant in differentiating between HER2(+) and HER(-) samples using our HER2 signature. However,  Rsubread has the bigger difference between the two subtypes shown as standardized mean.
+Both pipelines were significant in differentiating between HER2(+) and HER(-) samples using HER2 signature. However,  Rsubread has the bigger standardized mean difference between the two subtypes.
 
 The consistency of the predictions was assessed. TCGA's pipeline produced predictions with higher coeffecient of variation: 
 HER2(+) samples `r sd(ihc_pos_t$Rsem_log_q_200_f)/mean(ihc_pos_t$Rsem_log_q_200_f)` and HER2(-) samples`r sd(ihc_neg_t$Rsem_log_q_200_f)/mean(ihc_neg_t$Rsem_log_q_200_f)` compared to Rsubread's coefficient of variation.  
 For FPKM data: HER2(+) `r sd(ihc_pos_t$FPKM_log_q_200_f)/mean(ihc_pos_t$FPKM_log_q_200_f)` and HER2(-)`r sd(ihc_neg_t$FPKM_log_q_200_f)/mean(ihc_neg_t$FPKM_log_q_200_f)`  
 For TPM data: HER2(+) `r sd(ihc_pos_t$TPM_log_q_200_f)/mean(ihc_pos_t$TPM_log_q_200_f)` and HER2(-) `r sd(ihc_neg_t$TPM_log_q_200_f)/mean(ihc_neg_t$TPM_log_q_200_f)`.
 
-Finally, we are assessing the classification predictions using 10-fold cross validation  and using TCGA Level 3 and Rsubread TPM normalized lung adenocarcinoma and lung squamous carcinoma samples.
-```{r}
+Finally, we are assessing the classification predictions using 10-fold cross validation  and using TCGA Level 3 and Rsubread TPM normalized lung adenocarcinoma and lung squamous carcinoma samples. Rsubread processed data had better accuracy in predicting class than TCGA Level 3 data.
+```{r echo=FALSE}
 par(mfrow = c(1, 1),lwd=4)
 actual12 = data12$ActualClass
 predictions12 = data12$LUAD_Probability

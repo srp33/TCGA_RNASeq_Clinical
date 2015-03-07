@@ -1,2 +1,0 @@
-#!/bin/bash
-Rscript --vanilla ../Codes/ProcessClinicalData.R

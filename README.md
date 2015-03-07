@@ -14,6 +14,12 @@ This repository includes code for processing RNA-Seq FASTQ files and clinical da
 * Place the raw files in fastq or fastq.gz formats in the FASTQ folder of the repository
 * Install R packages "Rsubread", "limma", "edgeR" and "tools" for processing new samples. Install "stats" R package and its dependencies if you just want to run the analysis included in the manuscript.
 * Process the data using our code for downstream analysis.
+* To run the analysis in the manuscript, 
+	* Download and install R packages "stats", "ROCR" and "pROC"
+	* Download the data files from GEO Accession # GSE62820 (HER2 experimental data ) and #GSE62944 (TCGA reprocessed RNA-Seq data and clinical data).
+	* Set the working directory to where all the downloaded files are located.
+	* Run the TCGA_20_manuscript_analysis.Rmd file. Our results are stored as TCGA_20_manuscript_analysis.html file.
+
 
 ### Who do I talk to? ###
 
