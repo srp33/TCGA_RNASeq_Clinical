@@ -8,7 +8,7 @@ function buildCancerTypesFile {
   do
     sampleID=$(basename $f)
     sampleCancerType=$(cat CancerTypes/$sampleID)
-    cancerTypeMatch=$(grep $sampleCancerType TCGA_CancerTypes_Publishable_Sept2014.txt)
+    cancerTypeMatch=$(grep $sampleCancerType TCGA_CancerTypes_Publishable.txt)
 
     # Make sure we can publish on this sample
     if [ "$cancerTypeMatch" == "$sampleCancerType" ]
@@ -33,7 +33,7 @@ function matricize {
   do
     sampleID=$(basename $f)
     sampleCancerType=$(cat CancerTypes/$sampleID)
-    cancerTypeMatch=$(grep $sampleCancerType TCGA_CancerTypes_Publishable_Sept2014.txt)
+    cancerTypeMatch=$(grep $sampleCancerType TCGA_CancerTypes_Publishable.txt)
 
     # Make sure we can publish on this sample
     if [ "$cancerTypeMatch" == "$sampleCancerType" ]

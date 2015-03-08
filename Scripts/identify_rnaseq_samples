@@ -28,7 +28,5 @@ do
     continue
   fi
 
-  # This is designed to submit a job to a PBS system, but it could be executed without it.
-  qsub $(pwd)/normalize_rnaseq_sample $f
-  sleep 60 # Make sure we don't overrun the server
+  $(pwd)/normalize_rnaseq_sample $f
 done

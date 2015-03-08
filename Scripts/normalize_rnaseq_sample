@@ -1,18 +1,4 @@
 #!/bin/bash
-#
-#$ -cwd
-#$ -N normalize_rnaseq_sample
-#$ -j y
-#$ -P johnsonlab
-#$ -l h_rt=24:00:00
-#$ -pe omp 6
-
-echo "=========================================================="
-echo "Starting on       : $(date)"
-echo "Running on node   : $(hostname)"
-echo "Current job ID    : $JOB_ID"
-echo "Current job name  : $JOB_NAME"
-echo "=========================================================="
 
 set -o errexit
 
@@ -21,7 +7,7 @@ sampleIDFile=$1
 tcgaID=$(basename $sampleIDFile)
 analysisID=$(cat $sampleIDFile)
 
-fastqDir=$TMPDIR/FASTQ
+fastqDir=/tmp/FASTQ
 currentDir=$(pwd)
 outFpkmDir=$currentDir/FPKM
 outFpkmLogDir=$currentDir/FPKMlog
@@ -66,12 +52,8 @@ done
 fastqFilePath1=$(head -n 1 $fastqFileNamesFile)
 fastqFilePath2=$(head -n 2 $fastqFileNamesFile | tail -n 1)
 
-cd $TMPDIR
-$HOME/Software/R-3.1.0/bin/Rscript --vanilla $currentDir/ProcessRnaSeqFeatureCounts.R Genome/genome.fa $fastqFilePath1 $fastqFilePath2 Genome/genes.gtf $fastqDir/$tcgaID $outFpkmDir/$tcgaID $outFpkmLogDir/$tcgaID $outFeatureCountsDir/$tcgaID $outStatsDir/$tcgaID
+cd /tmp
+Rscript --vanilla $currentDir/ProcessRnaSeqFeatureCounts.R Genome/genome.fa $fastqFilePath1 $fastqFilePath2 Genome/genes.gtf $fastqDir/$tcgaID $outFpkmDir/$tcgaID $outFpkmLogDir/$tcgaID $outFeatureCountsDir/$tcgaID $outStatsDir/$tcgaID
 
 rm -fv $currentDir/XmlFiles/$tcgaID.xml
-
-echo "=========================================================="
-echo "Finished on       : $(date)"
-echo "=========================================================="
 

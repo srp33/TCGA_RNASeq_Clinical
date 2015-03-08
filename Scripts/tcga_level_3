@@ -1,18 +1,25 @@
 #!/bin/bash
+
 fastqFile=$1
-softwareDir=/data/Software/TCGA_RNA_Seq_Pipeline
+
+softwareDir=Software/TCGA_RNA_Seq_Pipeline
 samTools=$softwareDir/rsem-1.1.13/sam/samtools
 bwaDir=$softwareDir/MapSplice_multithreads_12_07/bowtie-0.12.7_fusion
 mapspliceDir=$softwareDir/MapSplice_multithreads_12_07/bin
-picardDir=/data/Software/picard-tools-1.82
+picardDir=$softwareDir/picard-tools-1.82
 ubu=$softwareDir/ubu-1.2-jar-with-dependencies.jar
-perlScriptDir=$softwareDir
-rsemDir=/data/Software/TCGA_RNA_Seq_Pipeline/rsem-1.2.12
-bedToolsDir=/data/Software/bedtools-2.17.0/bin
+rsemDir=$softwareDir/rsem-1.2.12
+bedToolsDir=$softwareDir/bedtools-2.17.0/bin
+referenceGenomeRef=Genomes/hg19_M_rCRS_ref
+referenceGenomeFile=Genomes/hg19_M_rCRS.fa
+referenceGenomeIndexFile=Genomes/hg19_M_rCRS/chromosomes
+referenceChromosomesDir=Genomes/hg19_M_rCRS/ebwt
+referenceBedFile=Genomes/unc_hg19.bed
+referenceTranscriptsFile=Genomes/hg19_M_rCRS_ref.transcripts.fa
 
-####change this workingDir variable for step 12####
-workingDir=/data2/u01_hmec_batch01/normalized
-#######
+workingDir=Level_3_Temp
+
+mkdir -p $workingDir
 
 
 sampleID=`basename $fastqFile`
@@ -29,14 +36,10 @@ echo processing $sampleID
 
 #1. Format fastq 1 for Mapsplice
 java -Xmx512M -jar $ubu fastq-format --phred33to64 --strip --suffix /1 --in $fastqFile --out $tmpFastqFile> $outDir/working/mapsplice_prep.log 
-#gzip $fastqFile #saving space on drive and moving to removable drive
-#echo moving $fastqFile to data3/hmec_RNA_batch1/FASTQ/
-#rm $fastqFile
-#mv ${fastqFile}.gz /data3/hmec_RNA_batch1/FASTQ/
 echo preprocessing is done
 
 #2.Mapsplice
-python $mapspliceDir/mapsplice_multi_thread.py --fusion --all-chromosomes-files $softwareDir/rsem_ref/hg19_M_rCRS.fa -X 8 -Q fq --chromosome-files-dir /data/Genomes/hg19_M_rCRS/chromosomes --Bowtieidx  /data/Genomes/hg19_M_rCRS/ebwt -1 $tmpFastqFile -o $outDir
+python $mapspliceDir/mapsplice_multi_thread.py --fusion --all-chromosomes-files $referenceGenomeFile -X 8 -Q fq --chromosome-files-dir $referenceChromsomesFile --Bowtieidx $referenceGenomeIndexFile -1 $tmpFastqFile -o $outDir
 #echo initial bam file is created now.. deleting the processed FASTQ file
 rm $tmpFastqFile
 
@@ -61,13 +64,13 @@ $samTools index ${outBamFile4}.bam
 echo Bam file is sorted now
 
 #8. Sort By chromosome, then read id
-echo using perl script from $perlScriptDir
-perl $perlScriptDir/sort_bam_by_reference_and_name.pl --input ${outBamFile4}.bam --output $outDir/sorted_by_chr_read.bam --temp-dir ${outDir}.tmp --samtools $samTools  > $outDir/working/sorted_by_chr_read.log 
+echo using perl script from $softwareDir
+perl $softwareDir/sort_bam_by_reference_and_name.pl --input ${outBamFile4}.bam --output $outDir/sorted_by_chr_read.bam --temp-dir ${outDir}.tmp --samtools $samTools  > $outDir/working/sorted_by_chr_read.log 
 echo sorted by chromosome then id
 
 #9. Translate to transcriptome coors
 echo in directory $outDir
-java -Xmx3G -jar $ubu sam-xlate --single --bed $softwareDir/unc_hg19.bed --in $outDir/sorted_by_chr_read.bam --out $outDir/transcriptome_alignments.bam --order $softwareDir/rsem_ref/hg19_M_rCRS_ref.transcripts.fa --xgtags --reverse > $outDir/working/genome_to_transcriptome.log
+java -Xmx3G -jar $ubu sam-xlate --single --bed $referenceBedFile --in $outDir/sorted_by_chr_read.bam --out $outDir/transcriptome_alignments.bam --order $referenceTranscriptsFile --xgtags --reverse > $outDir/working/genome_to_transcriptome.log
 echo translation to transcriptome coors done!
 
 #10. Filter indels, large inserts, zero mapping quality from transcriptome bam $ubu 1.2 version needed for this step to use '--single' parameter
@@ -77,13 +80,12 @@ echo Filtered indels, large inserts, zero mapping quality from transcriptome bam
 #11. RSEM
 echo starting rsem normalization in $outDir for $sampleID
 
-$rsemDir/rsem-calculate-expression --bam -p 8 --estimate-rspd --temporary-folder ${outDir}.temp_rsem --no-bam-output $outDir/transcriptome_alignments_filtered.bam $softwareDir/rsem_ref/hg19_M_rCRS_ref $sampleID > $outDir/working/rsem.log
+$rsemDir/rsem-calculate-expression --bam -p 8 --estimate-rspd --temporary-folder ${outDir}.temp_rsem --no-bam-output $outDir/transcriptome_alignments_filtered.bam $referenceGenomeRef $sampleID > $outDir/working/rsem.log
 
 
 echo data is RSEM normalized
 
 #12. Strip trailing tabs from rsem.isoforms.results
-#workingDir=/data2/u01_hmec_batch01/normalized   #For storing rsem gene.results and isoforms.results different directory than output directory
 echo moving output files for $sampleID for final processing...
 mv ${sampleID}* $workingDir/
 
