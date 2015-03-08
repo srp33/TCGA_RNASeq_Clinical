@@ -1,0 +1,18 @@
+NAME	VALUE
+Binreg Version	2
+Genes	200
+Metagenes	2
+Strip AFFX control	0
+Log Train0	1
+Log Train1	1
+Log Test	0
+Quantile Normalize	1
+Shift-Scale Normalize	0
+DWD Normalize	0
+DWD Normalize (Bild)	0
+Burn In	1000
+Samples	5000
+Skips	1
+Credible Interval	95
+Cross Validate	1
+Make Plots	1
