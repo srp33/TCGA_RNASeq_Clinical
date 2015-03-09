@@ -1,29 +1,56 @@
-# README #
+This repository includes code for processing RNA-Seq FASTQ files and clinical data from The Cancer Genome Atlas. In addition, we have included the code used for analyzing data in our manuscript, "RNA-Sequencing data for 7706 tumor samples across 20 cancer types from The Cancer Genome Atlas."
 
-This repository includes code for processing RNA-Seq FASTQ files and clinical data from The Cancer Genome Atlas. In addition, we have included the codes for data analysis in the manuscript "RNA-Sequencing data for 7706 tumor samples across 20 cancer types from The Cancer Genome Atlas".  
+## What is this repository for?
 
-### What is this repository for? ###
+* We used the 'Rsubread' R package to align and summarize reads at the gene level for 7706 TCGA RNA-Seq tumor samples. The R scripts we provide here can also be used to process samples that did not come from TCGA. We have also included the code for compiling clinical data available for these tumors into a matrix format and matching the clinical IDs with the RNA-Seq IDs.
+* We have provided the code and various intermediate data files that we produced in performing the analyses we describe in the manuscript.
 
-* We have used the 'Rsubread' R package to align and summarize reads at the gene level for 7706 TCGA RNA-Seq tumor samples. The R scripts can also be used to process new samples. We have also included the codes for compiling clinical data available for these tumors into a matrix format and matched the IDs for ease of matching phenotypes with clinical variables. 
-* We have providied the codes and small datasets necessary for analyzing the analysis scenarios as described in the manuscript.
+## How to normalize raw RNA-Seq data from TCGA
 
-### How do I get set up? ###
+This pipeline is designed to be executed on Unix-based systems. Most of the code is written in the R programming language. But it also requires "bash" scripts to be executed at the command line.
 
-* Clone the git repository to you local computing area using the url ttps://github.com/mumtahena/TCGA_RNASeq_clinical.git
-* Obtain access to download the raw TCGA data or download any other raw FASTQ files that you want to process
-* Place the raw files in fastq or fastq.gz formats in the FASTQ folder of the repository
-* Install R packages "Rsubread", "limma", "edgeR" and "tools" for processing new samples. Install "stats" R package and its dependencies if you just want to run the analysis included in the manuscript.
-* Process the data using our code for downstream analysis.
-* To run the analysis in the manuscript, 
-	* Download and install R packages "stats", "ROCR" and "pROC"
-	* Download the data files from GEO Accession # GSE62820 (HER2 experimental data ) and #GSE62944 (TCGA reprocessed RNA-Seq data and clinical data).
-	* Set the working directory to Analysis_datasets with all the downloaded files.
-	*  To make the HER2 predictions on TCGA breast cancer samples, BinReg 2 algorithm in MatLab platform was used. Using our HER2 signature datasets as training samples and TCGA breast cancer datasets as test samples, the predictions were generated. We ran the BinReg 2 for 200 genes with 2 megatons and quantile normalization (-g 200 -m 2 -q) to minimize the batch effects between training and test samples. The original outputs from BinReg2 is located at Analysis_datasets/10_14_predictions_raw. The output predictions from each method are tabulated and are located in the Analysis_datasets folder for further analysis on the data.
-	* To classify TCGA  lung adenocarcinoma and squamous carcinoma samples using "Random Forest" classifier with 10-fold cross validation, the R script at Code/Classify_luad_vs_lusc.R was used. The output predictions are located in the Analysis_datasets folder for further analysis on the data.
-	* Run the TCGA_20_manuscript_analysis.Rmd file. Our results are stored as TCGA_20_manuscript_analysis.html file.
+1. Install the [R statistical package](http://r-project.org). We used version 3.1.0.
 
+2. Install the following R packages, which can be obtained using either the ```install.packages``` function in R or via the [Bioconductor framework](http://www.bioconductor.org):
+    * Rsubread
+    * limma
+    * edgeR
+    * tools
 
-### Who do I talk to? ###
+3. Clone this git repository to your local computer.
+
+4. Via [dbGAP](http://www.ncbi.nlm.nih.gov/gap), obtain access to the raw TCGA data. Then obtain a private key that allows you download raw data via the [Cancer Genomics Hub](https://cghub.ucsc.edu/access/get_access.html). Store this key file as ```cghub.key``` in the current directory.
+
+5. In the ```Genome``` directory, store the reference genome file and GTF file that can be obtained from [here](http://support.illumina.com/sequencing/sequencing_software/igenome.html). We used version hg19. After extracting these files, you will find the reference genome in Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa and the GTF file in Homo_sapiens/UCSC/hg19/Annotation/Genes/genes.gtf. Move these directly to the local Genome directory.
+
+6. Execute Scripts/process_tcga_rsubread at the command line to begin downloading and normalizing samples.
+
+All the RNA-Seq and clinical data files that we have processed are available from Gene Expression Omnibus (accession numbers: GSE62820 and GSE62944).
+
+For informational purposes, we have also provided a bash script (Scripts/process_tcga_level_3) that contains the steps for producing "Level 3" values using the same steps that are performed by the TCGA consortium. These steps are described in more detail here: https://cghub.ucsc.edu/docs/tcga/UNC_mRNAseq_summary.pdf.
+
+## How to reanalyze our findings
+
+We also provide an R Markdown file (Analysis/TCGA_20_manuscript_analysis.Rmd) that contains the analysis code that we used for our manuscript. If you desire to reexecute this analysis, please complete the following steps:
+
+1. Install the [R statistical package](http://r-project.org). We used version 3.1.0.
+
+2. Install the following R packages, which can be obtained using either the ```install.packages``` function in R or via the [Bioconductor framework](http://www.bioconductor.org):
+    * stats
+    * ROCR
+    * pROC
+    * caret
+    * knitr
+
+3. Set the working directory to ```Analysis_datasets```.
+
+4. We used the BinReg 2 algorithm to make HER2 signature predictions on TCGA breast cancer samples. BinReg 2 runs on the MatLab platform. We used our HER2 signature datasets as training samples and the TCGA breast cancer datasets as test samples. We used the following parameters: 200 genes, 2 metagenes, quantile normalization (-g 200 -m 2 -q) to minimize the batch effects between training and test samples. The original outputs from BinReg2 are located within the ```Analysis_datasets/10_14_predictions_raw``` directory. These output predictions are summarized in the Analysis_datasets directory folder for further evaluation.
+
+5. The code we used to classify TCGA lung adenocarcinoma and squamous carcinoma samples is in Code/Classify_luad_vs_lusc.R. The outputs of this analysis are located in the ```Analysis_datasets``` directory.
+
+6. Use the ```knitr``` package to compile Analsysis/TCGA_20_manuscript_analysis.Rmd. Our results are stored in the TCGA_20_manuscript_analysis.html file.
+
+## Contact information
 
 * Mumtahena Rahman. [moom.rahman@utah.edu](mailto:moom.rahman@utah.edu)
 * Stephen R Piccolo. [https://piccolo.byu.edu](https://piccolo.byu.edu)
