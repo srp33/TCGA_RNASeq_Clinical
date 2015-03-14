@@ -1,0 +1,19 @@
+*.txt
+FeatureCounts
+FPKM
+FPKMlog
+TPM
+TPMlog
+DownloadSamples
+Temp
+CancerTypes
+InProgress
+go
+Query.xml
+*.key
+XmlFiles
+Genome
+<<<<<<< HEAD
+*.jar
+=======
+>>>>>>> 44503d9488894dcfaef326a0c0c9921ae6f5d08b

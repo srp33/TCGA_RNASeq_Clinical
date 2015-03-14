@@ -1,0 +1,32 @@
+#!/bin/bash
+
+set -o errexit
+
+mkdir -p DownloadSamples CancerTypes Temp FeatureCounts InProgress
+
+cgquery -o Query.xml -a "state=live&library_strategy=RNA-Seq&filetype=fasta&sample_type=0*&study=phs000178"
+
+rm -rfv DownloadSamples/* CancerTypes/*
+python Codes/ParseCgHubQueryResults.py Query.xml "" DownloadSamples CancerTypes
+
+rm -rf Temp/*
+
+for f in $(pwd)/DownloadSamples/*
+do
+  sampleID=$(basename $f)
+  sampleID=${sampleID/\.xml/}
+
+  if [ -f FeatureCounts/$sampleID ]
+  then
+    echo $sampleID already processed
+    continue
+  fi
+
+  if [ -f InProgress/$sampleID ]
+  then
+    echo $sampleID currently being processed
+    continue
+  fi
+
+  $(pwd)/Scripts/normalize_tcga_rsubread $f
+done

@@ -1,0 +1,113 @@
+#!/bin/bash
+
+fastqFile=$1
+
+softwareDir=Software/TCGA_RNA_Seq_Pipeline
+samTools=$softwareDir/rsem-1.1.13/sam/samtools
+bwaDir=$softwareDir/MapSplice_multithreads_12_07/bowtie-0.12.7_fusion
+mapspliceDir=$softwareDir/MapSplice_multithreads_12_07/bin
+picardDir=$softwareDir/picard-tools-1.82
+ubu=$softwareDir/ubu-1.2-jar-with-dependencies.jar
+rsemDir=$softwareDir/rsem-1.2.12
+bedToolsDir=$softwareDir/bedtools-2.17.0/bin
+referenceGenomeRef=Genomes/hg19_M_rCRS_ref
+referenceGenomeFile=Genomes/hg19_M_rCRS.fa
+referenceGenomeIndexFile=Genomes/hg19_M_rCRS/chromosomes
+referenceChromosomesDir=Genomes/hg19_M_rCRS/ebwt
+referenceBedFile=Genomes/unc_hg19.bed
+referenceTranscriptsFile=Genomes/hg19_M_rCRS_ref.transcripts.fa
+
+workingDir=Level_3_Temp
+
+mkdir -p $workingDir
+
+
+sampleID=`basename $fastqFile`
+sampleID=${sampleID/\.fastq/}
+outDir=${fastqFile/\.fastq/_rsem}
+mkdir -p $outDir
+mkdir -p $outDir/working
+tmpFastqFile=$outDir/`basename $fastqFile`
+outBamFile1=$outDir/alignments.bam
+outBamFile2=$outDir/rg_alignments.bam
+outBamFile3=$outDir/phred33_alignments.bam
+outBamFile4=$outDir/sorted_genome_alignments 
+echo processing $sampleID
+
+#1. Format fastq 1 for Mapsplice
+java -Xmx512M -jar $ubu fastq-format --phred33to64 --strip --suffix /1 --in $fastqFile --out $tmpFastqFile> $outDir/working/mapsplice_prep.log 
+echo preprocessing is done
+
+#2.Mapsplice
+python $mapspliceDir/mapsplice_multi_thread.py --fusion --all-chromosomes-files $referenceGenomeFile -X 8 -Q fq --chromosome-files-dir $referenceChromsomesFile --Bowtieidx $referenceGenomeIndexFile -1 $tmpFastqFile -o $outDir
+#echo initial bam file is created now.. deleting the processed FASTQ file
+rm $tmpFastqFile
+
+#3.Add read groups
+java -Xmx2G -jar $picardDir/AddOrReplaceReadGroups.jar INPUT=$outBamFile1  OUTPUT=$outBamFile2 RGSM=$sampleID RGID=$sampleID RGLB=TruSeq RGPL=illumina RGPU=barcode VALIDATION_STRINGENCY=SILENT TMP_DIR=$outDir/working/add_rg_tag_tmp > $outDir/working/add_rg_tag.log
+echo read groups added or replaced now!
+
+#4.Convert back to phred33
+java -Xmx512M -jar $ubu sam-convert --phred64to33 --in $outBamFile2 --out $outBamFile3 > $outDir/working/sam_convert.log 
+echo bam file converted back to phred33
+
+#5.Sort by coordinate
+$samTools sort $outBamFile3 $outBamFile4
+echo converted Bam file is sorted now
+
+#6.Flagstat
+$samTools flagstat ${outBamFile4}.bam > ${outBamFile4}.flagstat
+echo flagstat file created now!
+
+#7.Index
+$samTools index ${outBamFile4}.bam
+echo Bam file is sorted now
+
+#8. Sort By chromosome, then read id
+echo using perl script from $softwareDir
+perl $softwareDir/sort_bam_by_reference_and_name.pl --input ${outBamFile4}.bam --output $outDir/sorted_by_chr_read.bam --temp-dir ${outDir}.tmp --samtools $samTools  > $outDir/working/sorted_by_chr_read.log 
+echo sorted by chromosome then id
+
+#9. Translate to transcriptome coors
+echo in directory $outDir
+java -Xmx3G -jar $ubu sam-xlate --single --bed $referenceBedFile --in $outDir/sorted_by_chr_read.bam --out $outDir/transcriptome_alignments.bam --order $referenceTranscriptsFile --xgtags --reverse > $outDir/working/genome_to_transcriptome.log
+echo translation to transcriptome coors done!
+
+#10. Filter indels, large inserts, zero mapping quality from transcriptome bam $ubu 1.2 version needed for this step to use '--single' parameter
+java -Xmx512M -jar $ubu sam-filter --single --in $outDir/transcriptome_alignments.bam --out $outDir/transcriptome_alignments_filtered.bam --strip-indels --max-insert 10000 --mapq 1 > $outDir/working/sam_filter.log
+echo Filtered indels, large inserts, zero mapping quality from transcriptome bam
+
+#11. RSEM
+echo starting rsem normalization in $outDir for $sampleID
+
+$rsemDir/rsem-calculate-expression --bam -p 8 --estimate-rspd --temporary-folder ${outDir}.temp_rsem --no-bam-output $outDir/transcriptome_alignments_filtered.bam $referenceGenomeRef $sampleID > $outDir/working/rsem.log
+
+
+echo data is RSEM normalized
+
+#12. Strip trailing tabs from rsem.isoforms.results
+echo moving output files for $sampleID for final processing...
+mv ${sampleID}* $workingDir/
+
+perl $softwareDir/strip_trailing_tabs.pl --input $workingDir/${sampleID}.isoforms.results --temp $outDir/working/${sampleID}.orig.isoforms.results
+
+#13. Prune isoforms from gene quant file
+mv $workingDir/${sampleID}.genes.results $outDir/working/${sampleID}.orig.genes.results; sed /^uc0/d $outDir/working/${sampleID}.orig.genes.results >$workingDir/${sampleID}.genes.results
+
+#14. Normalize gene quant
+perl $softwareDir/quartile_norm.pl -c 5 -q 75 -t 1000 -o $workingDir/${sampleID}.rsem.genes.normalized_results $workingDir/${sampleID}.genes.results
+
+#16. Normalize isoform quant
+perl $softwareDir/quartile_norm.pl -c 5 -q 75 -t 300 -o $workingDir/${sampleID}.rsem.isoforms.normalized_results $workingDir/${sampleID}.isoforms.results
+
+#********************************************************
+#outDir=/data2/u01_hmec_batch01/fastq/f1/FASTQ/f1
+#********************************************************
+#17. Junction counts
+#java -Xmx512M -jar $ubu sam-junc --junctions $softwareDir/splice_junctions.txt --in $outDir/$outDir/sorted_genome_alignments.bam --out $workingDir/${sampleID}.junction_quantification.txt > $outDir/working/${sampleID}_junction_quantification.log
+
+#18. Exon counts
+#$bedToolsDir/coverageBed -split -abam $outDir/sorted_genome_alignments.bam -b $softwareDir/composite_exons.bed | perl $softwareDir/normalizeBedToolsExonQuant.pl $softwareDir/composite_exons.bed > $outDir/${sampleID}.bt.exon_quantification.txt
+
+#19. Cleanup large intermediate output
+#rm alignments.bam logs/* working/phred33_alignments.bam working/rg_alignments.bam working/sorted_by_chr_read.bam working/transcriptome_alignments.bam working/transcriptome_alignments_filtered.bam working/prep_1.fastq working/prep_2.fastq > working/cleanup.log 
