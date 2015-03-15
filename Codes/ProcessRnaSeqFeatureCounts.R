@@ -11,7 +11,7 @@ gtfFilePath = commandArgs()[10]
 tempFilePrefix = commandArgs()[11]
 outFpkmFilePath = commandArgs()[12]
 outTpmFilePath = commandArgs()[13]
-outCountsFilePath = commandArgs()[15]
+outCountsFilePath = commandArgs()[14]
 outStatsFilePath = commandArgs()[15]
 
 memory = 4000
