@@ -17,3 +17,4 @@ Genome
 temp*
 Scripts/*_rsubread2
 Codes/ProcessRnaSeqFeatureCounts2.R
+nohup*
