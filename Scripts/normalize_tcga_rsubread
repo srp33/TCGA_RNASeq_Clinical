@@ -7,12 +7,10 @@ sampleIDFile=$1
 tcgaID=$(basename $sampleIDFile)
 analysisID=$(cat $sampleIDFile)
 
-fastqDir=/tmp/FASTQ
 currentDir=$(pwd)
+fastqDir=$currentDir/Temp/FASTQ
 outFpkmDir=$currentDir/FPKM
-outFpkmLogDir=$currentDir/FPKMlog
-outTpkmDir=$currentDir/TPM
-outTpmLogDir=$currentDir/TPMlog
+outTpmDir=$currentDir/TPM
 outFeatureCountsDir=$currentDir/FeatureCounts
 outStatsDir=$currentDir/Stats
 inProgressFile=$currentDir/InProgress/$tcgaID
@@ -33,16 +31,18 @@ mkdir -pv $fastqDir/$tcgaID $outFpkmDir $outFpkmLogDir $outTpmDir $outTpmLogDir 
 echo Downloading $tcgaID
 mkdir -p $currentDir/XmlFiles
 cgquery -o $currentDir/XmlFiles/$tcgaID.xml -a "state=live&library_strategy=RNA-Seq&filetype=fasta&analysis_id=${analysisID}"
-gtdownload -vv -d $currentDir/XmlFiles/$tcgaID.xml -c $currentDir/cghub.key --max-children 4 -p $fastqDir
+gtdownload -vv -d $currentDir/XmlFiles/$tcgaID.xml -c $currentDir/cghub.key --max-children 1 -p $fastqDir
 
 echo Rename and extract files $tcgaID
 if [ -f $fastqDir/$analysisID/*.tar.gz ]
 then
   mv -v $fastqDir/$analysisID/*.tar.gz $fastqDir/$tcgaID.tar.gz
   tar -zxvf $fastqDir/$tcgaID.tar.gz -C $fastqDir/$tcgaID
+  rm -fv $fastqDir/$tcgaID.tar.gz
 else
   mv -v $fastqDir/$analysisID/*.tar $fastqDir/$tcgaID.tar
   tar -xvf $fastqDir/$tcgaID.tar -C $fastqDir/$tcgaID
+  rm -fv $fastqDir/$tcgaID.tar
 fi
 
 fastqFileNamesFile=$fastqDir/$tcgaID/FASTQFiles
@@ -54,8 +54,7 @@ done
 fastqFilePath1=$(head -n 1 $fastqFileNamesFile)
 fastqFilePath2=$(head -n 2 $fastqFileNamesFile | tail -n 1)
 
-cd /tmp
-Rscript --vanilla $currentDir/Codes/ProcessRnaSeqFeatureCounts.R $currentDir/Genome/genome.fa $fastqFilePath1 $fastqFilePath2 $currentDir/Genome/genes.gtf $fastqDir/$tcgaID $outFpkmDir/$tcgaID $outFpkmLogDir/$tcgaID $outTpmDir/$tcgaID $outTpmLogDir/$tcgaID $outFeatureCountsDir/$tcgaID $outStatsDir/$tcgaID
+Rscript --vanilla $currentDir/Codes/ProcessRnaSeqFeatureCounts.R $currentDir/Genome/genome.fa $fastqFilePath1 $fastqFilePath2 $currentDir/Genome/genes.gtf $fastqDir/$tcgaID $outFpkmDir/$tcgaID $outTpmDir/$tcgaID $outFeatureCountsDir/$tcgaID $outStatsDir/$tcgaID
 
 rm -fv $currentDir/XmlFiles/$tcgaID.xml
 

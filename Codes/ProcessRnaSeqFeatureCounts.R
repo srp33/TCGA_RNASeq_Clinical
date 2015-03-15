@@ -10,14 +10,12 @@ inFilePath2 = commandArgs()[9] # NULL for single-end analyses or when a BAM file
 gtfFilePath = commandArgs()[10]
 tempFilePrefix = commandArgs()[11]
 outFpkmFilePath = commandArgs()[12]
-outFpkmLogFilePath = commandArgs()[13]
-outTpmFilePath = commandArgs()[14]
-outTpmLogFilePath = commandArgs()[15]
-outCountsFilePath = commandArgs()[16]
-outStatsFilePath = commandArgs()[17]
+outTpmFilePath = commandArgs()[13]
+outCountsFilePath = commandArgs()[15]
+outStatsFilePath = commandArgs()[15]
 
 memory = 4000
-nthreads = 2
+nthreads = 1
 
 input_format = "gzFASTQ"
 if (file_ext(inFilePath1) == "bam")
@@ -49,9 +47,9 @@ featureCounts = cbind(fCountsList$annotation[,1], fCountsList$counts)
 write.table(featureCounts, outCountsFilePath, sep="\t", col.names=FALSE, row.names=FALSE, quote=FALSE)
 
 write.table(cbind(fCountsList$annotation[,1], fpkm), outFpkmFilePath, sep="\t", col.names=FALSE, row.names=FALSE, quote=FALSE)
-write.table(cbind(fCountsList$annotation[,1], log2(fpkm + 1)), outFpkmLogFilePath, sep="\t", col.names=FALSE, row.names=FALSE, quote=FALSE)
+#write.table(cbind(fCountsList$annotation[,1], log2(fpkm + 1)), outFpkmLogFilePath, sep="\t", col.names=FALSE, row.names=FALSE, quote=FALSE)
 write.table(cbind(fCountsList$annotation[,1], tpm), outTpmFilePath, sep="\t", col.names=FALSE, row.names=FALSE, quote=FALSE)
-write.table(cbind(fCountsList$annotation[,1], log2(tpm + 1)), outTpmLogFilePath, sep="\t", col.names=FALSE, row.names=FALSE, quote=FALSE)
+#write.table(cbind(fCountsList$annotation[,1], log2(tpm + 1)), outTpmLogFilePath, sep="\t", col.names=FALSE, row.names=FALSE, quote=FALSE)
 
 unlink(outBamFilePath)
 unlink(paste(outBamFilePath, ".indel", sep=""))

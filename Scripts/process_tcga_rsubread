@@ -5,6 +5,7 @@ set -o errexit
 mkdir -p DownloadSamples CancerTypes Temp FeatureCounts InProgress
 
 cgquery -o Query.xml -a "state=live&library_strategy=RNA-Seq&filetype=fasta&sample_type=0*&study=phs000178"
+#cgquery -o Query.xml -a "state=live&library_strategy=RNA-Seq&filetype=fasta&sample_type=0*&study=phs000178&disease_abbr=DLBC"
 
 rm -rfv DownloadSamples/* CancerTypes/*
 python Codes/ParseCgHubQueryResults.py Query.xml "" DownloadSamples CancerTypes
@@ -18,13 +19,13 @@ do
 
   if [ -f FeatureCounts/$sampleID ]
   then
-    echo $sampleID already processed
+    #echo $sampleID already processed
     continue
   fi
 
   if [ -f InProgress/$sampleID ]
   then
-    echo $sampleID currently being processed
+    #echo $sampleID currently being processed
     continue
   fi
 
