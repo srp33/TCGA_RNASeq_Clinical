@@ -19,3 +19,5 @@ Scripts/*_rsubread2
 Codes/ProcessRnaSeqFeatureCounts2.R
 nohup*
 Stats
+update_git
+commit_git
