@@ -12,8 +12,6 @@ This repository includes code for processing RNA-Seq FASTQ files and clinical da
 
 ## How to normalize raw RNA-Seq data and process clinical data from TCGA
 
-### Normalize RNA-Seq data
-
 This pipeline is designed to be executed on Unix-based systems. Most of the code is written in the R programming language. But it also requires "bash" scripts to be executed at the command line.
 
 1. Install the [R statistical package](http://r-project.org). We used version 3.1.0.
