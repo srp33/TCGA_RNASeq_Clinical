@@ -1,7 +1,14 @@
 
+<<<<<<< HEAD
 ##install packackage 'plyr'
 #install.packages("plyr")
 library(plyr)
+=======
+if (!require("plyr")) {
+   install.packages("plyr", dependencies = TRUE)
+   library(plyr)
+   }
+>>>>>>> 828998a3b118968577ba27268cb159e71be7411b
 
 dirname='.'
 setwd(dirname)#Set the directory where the clinical data is located for each cancer in separate folder

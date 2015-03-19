@@ -7,6 +7,13 @@ This repository includes code for processing RNA-Seq FASTQ files and clinical da
 
 ## How to normalize raw RNA-Seq data from TCGA
 
+=======
+* We have provided the code and various intermediate data files that we produced in performing the analyses we describe in the manuscript "RNA-Sequencing data for 7706 tumor samples across 20 cancer types from The Cancer Genome Atlas."
+
+## How to normalize raw RNA-Seq data and process clinical data from TCGA
+
+### Normalize RNA-Seq data
+
 This pipeline is designed to be executed on Unix-based systems. Most of the code is written in the R programming language. But it also requires "bash" scripts to be executed at the command line.
 
 1. Install the [R statistical package](http://r-project.org). We used version 3.1.0.
@@ -28,6 +35,18 @@ This pipeline is designed to be executed on Unix-based systems. Most of the code
 All the RNA-Seq and clinical data files that we have processed are available from Gene Expression Omnibus (accession numbers: GSE62820 and GSE62944).
 
 For informational purposes, we have also provided a bash script (Scripts/process_tcga_level_3) that contains the steps for producing "Level 3" values using the same steps that are performed by the TCGA consortium. These steps are described in more detail here: https://cghub.ucsc.edu/docs/tcga/UNC_mRNAseq_summary.pdf.
+
+### Process clinical data
+
+1. Install R package 'plyr' using the ```install.packages``` function in R.
+
+2. Download the Clinical data for individual cancer type from [TCGA Data Portal] (https://tcga-data.nci.nih.gov/tcga/dataAccessMatrix.htm) in Biotab format.
+
+3. Download [PANCAN20.IlluminaHiSeq_RNASeqV2.tumor_Rsubread_FeatureCounts.txt](ftp://ftp.ncbi.nlm.nih.gov/geo/samples/GSM1536nnn/GSM1536837/suppl/GSM1536837%5FTCGA%5F20%2EIllumina%2Etumor%5FRsubread%5FFeatureCounts%2Etxt%2Egz) from GEO (Accession number GSM1536837) and save the unzipped file to 'Datasets' folder.
+
+4. Set directory to where all the clinical data folders for each cancer type is located.
+
+5. Run the R script at Codes/ProcessClinicalData.R. 
 
 ## How to reanalyze our findings
 

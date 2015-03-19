@@ -2,12 +2,13 @@
 
 set -o errexit
 
-mkdir -p DownloadSamples DownloadSamples CancerTypes Temp FeatureCounts InProgress
+mkdir -p DownloadSamples CancerTypes Temp FeatureCounts InProgress
 
-cghub/bin/cgquery -o Query.xml -a "state=live&library_strategy=RNA-Seq&filetype=fasta&sample_type=0*"
+cgquery -o Query.xml -a "state=live&library_strategy=RNA-Seq&filetype=fasta&sample_type=0*&study=phs000178"
+#cgquery -o Query.xml -a "state=live&library_strategy=RNA-Seq&filetype=fasta&sample_type=0*&study=phs000178&disease_abbr=DLBC"
 
 rm -rfv DownloadSamples/* CancerTypes/*
-python code/ParseCgHubQueryResults.py Query.xml "" DownloadSamples CancerTypes
+python Codes/ParseCgHubQueryResults.py Query.xml "" DownloadSamples CancerTypes
 
 rm -rf Temp/*
 
@@ -28,5 +29,5 @@ do
     continue
   fi
 
-  $(pwd)/normalize_rnaseq_sample $f
+  $(pwd)/Scripts/normalize_tcga_rsubread $f
 done
