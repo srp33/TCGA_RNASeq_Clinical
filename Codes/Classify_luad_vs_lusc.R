@@ -5,15 +5,15 @@ outFilePath20 = "Classification_20_LUAD_LUSC_Predictions.txt"
 
 # Read data from file
 setwd("Analysis_datasets")
-luad12=read.table("12_LUAD_t.txt", sep="\t", stringsAsFactors=F, header=TRUE, row.names=1, check.names=F)
-lusc12=read.table("12_LUSC_t.txt", sep="\t", stringsAsFactors=F, header=TRUE, row.names=1, check.names=F)
-lu12=cbind(luad12,lusc12)
-luad20=read.table("20_LUAD_t.txt", sep="\t", stringsAsFactors=F, header=TRUE, row.names=1, check.names=F)
-lusc20=read.table("20_LUSC_t.txt", sep="\t", stringsAsFactors=F, header=TRUE, row.names=1, check.names=F)
-lu20=cbind(luad20,lusc20)
+luad12 = read.table("12_LUAD_t.txt", sep="\t", stringsAsFactors=F, header=TRUE, row.names=1, check.names=F)
+lusc12 = read.table("12_LUSC_t.txt", sep="\t", stringsAsFactors=F, header=TRUE, row.names=1, check.names=F)
+lu12 = cbind(luad12,lusc12)
+luad20 = read.table("20_LUAD_t.txt", sep="\t", stringsAsFactors=F, header=TRUE, row.names=1, check.names=F)
+lusc20 = read.table("20_LUSC_t.txt", sep="\t", stringsAsFactors=F, header=TRUE, row.names=1, check.names=F)
+lu20 = cbind(luad20,lusc20)
 
-# only keep the same samples in TCGA processed versus Rsubread processed data
-lu20_f<-lu20[,colnames(lu20)%in%colnames(lu12)]
+# Only keep the same samples in TCGA processed versus Rsubread processed data
+lu20_f = lu20[,colnames(lu20)%in%colnames(lu12)]
 
 # Remove class values from data frame "LGG"==rownames(data)[9752]
 classes12 = as.factor(as.character(lu12[nrow(lu12),]))
