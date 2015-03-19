@@ -1,5 +1,5 @@
 ---
-Title:  Analysis for the manuscript"RNA-Sequencing data for 7706 tumor samples across 20 cancer types from The Cancer Genome Atlas "
+Title:  Analysis for the manuscript, "RNA-Sequencing data for 7706 tumor samples across 20 cancer types from The Cancer Genome Atlas "
 author: "Mumtahena Rahman"
 date: "March 5, 2015"
 output: html_document
@@ -7,11 +7,15 @@ output: html_document
 ```{r echo=FALSE}
 start_time <- Sys.time()
 ```
-## Analysis of data as in the manuscript "RNA-Sequencing data for 7706 tumor samples across 20 cancer types from The Cancer Genome Atlas"" 
+## Analysis of data as described in the manuscript "RNA-Sequencing data for 7706 tumor samples across 20 cancer types from The Cancer Genome Atlas"" 
 
-* Manually download the GFP and HER2 overexpressed in human mammary epithelial cells RNA-Seq data from GEO (Accession#GSE62820)
-* Manually download the compiled clinical variable dataaset from GEO (Accession#GSE62944)    
-* Install and load the required R package for analysis "stats", "ROCR", "pROC".
+#### Preliminary steps
+
+* Manually download the RNA-Seq data for GFP and HER2 overexpressed human mammary epithelial cells from GEO (accession# GSE62820)
+* Manually download the compiled RNA-Seq and clinical data from GEO (accession# GSE62944). The Scripts/process_tcga_rsubread script contains code that shows how we processed the RNA-Seq data. The Codes/ProcessClinicalData.R script in our repository contains the code that we used to generate the clinical file. Please these in the Analysis_datasets directory.
+* Install and load the required R package for analysis "stats", "ROCR", "pROC". The following code demonstrates how to do this.
+* Set the working directory in R to the ```TCGA_RNASeq_clinical/Analysis_datasets``` directory in this repository.
+
 ```{r include=FALSE}
 
 if (!require("stats")) {
@@ -28,39 +32,71 @@ if (!require("pROC")) {
    }
 ```
 
+The following code reads data files that have been preprocessed using either pipeline.
 
 ```{r "Reading counts file" ,echo=FALSE}
-#######################comparing gene counts results in our dataset############
-setwd("~/Dropbox/TCGA_RNASeq_clinical/Analysis_datasets/")
-rsem_her2_expected_counts<-read.table("GFP18_HER2_TCGA_Pipeline_Expected_Gene_Counts.txt", sep='\t', header=1, row.names=1, check.names=F) #download this form GEO Accession # GSE62820 and unzip
-feature<-read.table("GFP18_HER2_Rsubread_geneCounts.txt", sep='\t',header=1, row.names=1, check.names = F)  #download this form GEO Accession # GSE62820 and unzip
-TCGA_her2<-read.table("GFP18_HER2_TCGA_Pipeline_Normalized_Genes_Results.txt", sep='\t', header=1, check.names=F)#download this form GEO Accession # GSE62820 and unzip
+# TCGA pipeline, expected counts
+rsem_her2_expected_counts<-read.table("GFP18_HER2_TCGA_Pipeline_Expected_Gene_Counts.txt", sep='\t', header=1, row.names=1, check.names=F) # This was downloaded from GEO Accession # GSE62820 and unzipped
 
-rsub_fpkm<-read.table("GFP18_HER2_Rsubread_FPKM.txt", sep='\t',header=1, row.names=1, check.names = F)#download this form GEO Accession # GSE62820 and unzip
+# Rsubread pipeline, gene counts
+feature<-read.table("GFP18_HER2_Rsubread_geneCounts.txt", sep='\t',header=1, row.names=1, check.names = F) # This was downloaded from GEO Accession # GSE62820 and unzipped
+
+# TCGA pipeline, normalized expression files
+TCGA_her2<-read.table("GFP18_HER2_TCGA_Pipeline_Normalized_Genes_Results.txt", sep='\t', header=1, check.names=F) # This was downloaded from GEO Accession # GSE62820 and unzipped
+
+# Rsubread pipeline, FPKM values
+rsub_fpkm<-read.table("GFP18_HER2_Rsubread_FPKM.txt", sep='\t',header=1, row.names=1, check.names = F) # This was downloaded from GEO Accession # GSE62820 and unzipped
 rsub_fpkmlog<-log2(rsub_fpkm+1)
 
-rsub_tpm<-read.table("GFP18_HER2_Rsubread_TPM.txt", sep='\t',header=1, row.names=1, check.names = F) #download this form GEO Accession # GSE62820 and unzip
+# Rsubread pipeline, TPM values
+rsub_tpm<-read.table("GFP18_HER2_Rsubread_TPM.txt", sep='\t',header=1, row.names=1, check.names = F) # This was downloaded from GEO Accession # GSE62820 and unzipped
 rsub_tpmlog<-log2(rsub_tpm+1)
 
-rsub_preds<-read.table("rsubread_10_14.txt", sep='\t', header=1, row.names=1)# File is at Analysis_datasets
-tcga_preds<-read.table("Rsem_10_14.txt", sep='\t', header=1, row.names=1) # File is at Analysis_datasets
+# Clinical data
+clinicals<-t(read.delim('TCGA20_clinical_data_ordered_all_clinical_variables_samples_as_columns.txt',sep='\t',header=1, row.names=1,check.names=F)) # This was downloaded from GEO Accession # GSE62820 and unzipped
+```
+
+We used BinReg 2 to make HER pathway predictions. The following code reads the resulting prediction files into R.
+
+```{r}
+rsub_preds<-read.table("rsubread_10_14.txt", sep='\t', header=1, row.names=1)
+tcga_preds<-read.table("Rsem_10_14.txt", sep='\t', header=1, row.names=1)
+```
+
+We calculate the number of zero values per sample across the TCGA data set.
+
+Moom: mention the script that you used to generate these files.
+
+```{r}
 pancan12_zero<-read.table("PANCAN12_19583_by_3380_numZeroes.txt",row.names=1,sep='\t',skip = 1)# File is at Analysis_datasets
 pancan20_tpm_zero<-read.table("PANCAN20_19583_by_3380_numZeroes.txt",sep='\t',row.names=1,skip = 1)# File is at Analysis_datasets
-clinicals<-t(read.delim('TCGA20_clinical_data_ordered_all_clinical_variables_samples_as_columns.txt',sep='\t',header=1, row.names=1,check.names=F))# download this form GEO Accession # GSE62944 and unzip
+```
+
+We used Random Forests regression to predict lung-cancer type based on RNA-Seq data.
+
+Moom: mention the script that you used to generate these files.
+
+```{r}
 data12 = read.table("Classification_12_LUAD_LUSC_Predictions.txt", sep="\t", stringsAsFactors=FALSE, header=TRUE, row.names=1) # File is at Analysis_datasets
 data20 = read.table("Classification_20_LUAD_LUSC_Predictions.txt", sep="\t", stringsAsFactors=FALSE, header=TRUE, row.names=1)# File is at Analysis_datasets
+```
 
+## Helper functions
+
+```{r}
 standardized_mean<-function(m.1,sd.1,n.1,m.2,sd.2,n.2){
   sd_pooled=sqrt(((n.1-1)*sd.1^2+(n.2-1)*sd.2^2)/(n.1+n.2-2))
   (m.1-m.2)/sd_pooled
   }
 
+# Moom: please state briefly what this function does
 merge_drop<-function(x,y,by=0)
 {
   new_m<-merge(x,y,by=by)
   rownames(new_m)<-new_m$Row.names
   return(new_m[,2:length(colnames(new_m))])
 }
+
 plotROC = function(actual, probabilities, plotCI=FALSE)
 {
   # bottom, left, top, right
@@ -81,16 +117,17 @@ plotROC = function(actual, probabilities, plotCI=FALSE)
     plot(roc_result, add=TRUE)
   }
 
-text(0.5, 0.00, labels=paste("AUC: ", midAuc, " (", lowerBoundAuc, "-", upperBoundAuc, ")", sep=""))
+  text(0.5, 0.00, labels=paste("AUC: ", midAuc, " (", lowerBoundAuc, "-", upperBoundAuc, ")", sep=""))
 
   par(mar=c(5.1, 4.1, 2.1, 2.1))
 }
 ```
+
 ### 'Gene count' level analysis
 
 We compared gene counts results using GFP control protein and ERBB2 protein overexpressed human mammary epithelial cell samples. TCGA's pipeline and Rsubread pipelines were used to generate raw gene level counts. Log based 2 gene counts are used to differentiate between control and ERBB2 overexpressed samples.
 
-First, we computed the empiric cumulative distribution for all samples from two pipelines. Second, we compared the total mapped read per HMEC samples from TCGA pipeline & Rsubread pipeline. Raw gene counts for GFP and HER2 HMEC samples were processed via TCGA pipeline (expected counts) and Rsubread pipeline (integer based), This analysis is done before any normalization method was applied.
+First, we computed the empiric cumulative distribution for all samples from the two pipelines. Second, we compared the total mapped reads per HMEC samples for the TCGA pipeline and Rsubread pipeline. Raw gene counts for GFP and HER2 HMEC samples were processed via the TCGA pipeline (expected counts) and the Rsubread pipeline (integer based), This analysis was done before any normalization method was applied.
 
 ```{r echo=FALSE}
 ##########computing the empiric cumulative distribution per sample overlaied on same graph######## 
@@ -101,6 +138,7 @@ plot(ecdf_all_ex[[1]],xlab="log2(Total mapped reads)",ylab="Cumulative proportio
 legend(10,10,c("GFP", "HER2"), col = c("blue","brown"))
 for(i in 2:12){lines(ecdf_all_ex[[i]],xlab=NA, ylab = NA,col="blue")}
 for(i in 13:17){lines(ecdf_all_ex[[i]],xlab=NA, ylab = NA,col="brown")}
+
 ###using Rsubread pipeline aligned data
 ecdf_all<-apply(log2(feature+1),2,ecdf)
 plot(ecdf_all[[1]],xlab="log2(Total mapped reads)",ylab="Cumulative proportion",col="blue",main="Rsubread pipeline",ylim=c(0,1),xlim = c(0,20),cex.axis=1.5, cex.lab=1.5)
@@ -123,10 +161,9 @@ axis(1, at=1:2, tick=T, labels=c("Control", "HER2"), cex.axis=1.5)
 boxplot(log2(feature_counts[1:12]+1), log2(feature_counts[13:17]+1),range=0,cex.axis=1.5, cex.lab=1.5,outpch=NA,lwd=4,ylim=c(20,25),xlab="", ylab="log2(Total mapped reads)",col='grey75',medcol="grey75",lwd=4,main="Rsubread Pipeline",border = "grey35")
 points(jitter(x, factor=1.5), c(log2(feature_counts[1:12]+1), log2(feature_counts[13:17]+1)), pch=4,cex=2,cex.lab=1.5,col="black")
 axis(1, at=1:2, tick=T, labels=c("Control", "HER2"), cex.axis=1.5) 
-
 ```
 
-Third, we are comparing the "ERBB2" gene counts across the experimental treatment to assess how well the two pipeline differentiate control ERRB2 versus overexpressed ERBB2 at the gene counts level.
+Third, we are comparing the "ERBB2" gene counts across the experimental treatment to assess how well the two pipelines differentiate control ERRB2 versus overexpressed ERBB2 at the gene counts level.
 
 ```{r}
 #######Boxplotting ERBB2 gene counts in HMEC samples#####
@@ -142,8 +179,7 @@ points(jitter(rep(1,12),factor=2),log2(rsem_her2$ERBB2[1:12]+1),pch=4,cex=2,cex.
 points(jitter(rep(2,5),factor=2),log2(rsem_her2$ERBB2[13:17]+1),pch=4,cex=2,cex.lab=1.5,col='black')
 points(jitter(rep(3,12),factor=2),log2(rsub_her2$ERBB2[1:12]+1),pch=4,cex=2,cex.lab=1.5,col='black')
 points(jitter(rep(4,5),factor=2),log2(rsub_her2$ERBB2[13:17]+1),pch=4,cex=2,cex.lab=1.5,col='black')
-axis(1, at=1:4, tick=T, labels=c("TCGA\nControl", "TCGA\nHER2","Rsubread\nControl", "Rsubread\nHER2"), cex.axis=0.8) 
-
+axis(1, at=1:4, tick=T, labels=c("TCGA\nControl", "TCGA\nHER2","Rsubread\nControl", "Rsubread\nHER2"), cex.axis=0.8)
 
 ##using data processed by RSEM detected difference in her2 gene count in HER2 overexpressed versus GFP overexpressed samples
 ##t = -12.1833, df = 4.157, p-value = 0.0002081 but was worse than Rsubread
@@ -163,7 +199,6 @@ standardized_mean(m.1=mean((log2(rsub_her2$ERBB2[13:17]+1))),sd.1=sd((log2(rsub_
 
 Both methods find significant differences in the ERBB2 read counts between GFP control and HER2 samples. However, coefficient of variable is less with Rsubread data than TCGA pipeline processed data. Moreover, standardized mean differences in ERBB2 gene counts between HER2 activated and control samples using TCGA pipeline is smaller than the Rsubread pipeline processed data.
 
-
 Using TCGA pipeline produced expected gene counts data, coefficient of variation in HER2 gene for GFP overexpressed control samples are: `r sd(rsem_her2_expected_counts$ERBB2[13:17])/mean(rsem_her2_expected_counts$ERBB2[13:17])` and HER2 overexpressed samples are: `r sd(rsem_her2_expected_counts$ERBB2[13:17])/mean(rsem_her2_expected_counts$ERBB2[13:17])`
 
 Using Rsubreaad pipeline produced expected gene counts data, coefficient of variation in HER2 gene for GFP overexpressed control samples are: `r sd(rsub_her2$ERBB2[1:12])/mean(rsub_her2$ERBB2[1:12])` and HER2 overexpressed samples are: `r sd(rsub_her2$ERBB2[13:17])/mean(rsub_her2$ERBB2[13:17])`
@@ -173,6 +208,7 @@ Using Rsubreaad pipeline produced expected gene counts data, coefficient of vari
 We compared normalized gene counts results using GFP control protein and ERBB2 protein overexpressed human mammary epithelial cell samples. Log based 2 gene expression of the TCGA Level 3 data, Rsubread processed FPKM and TPM data are used for this analysis.
 
 First, we computed the consistency of the gene expression across common genes after normalization. Second, empiric cumulative distribution for all samples from two pipelines. Second, we compared the total mapped read per HMEC samples from TCGA pipeline & Rsubread pipeline. Third, we compared HER2(ERBB2) gene expressions between control and HER2-overexpressed samples.
+
 ```{r echo=FALSE}
 #######################comparing gene counts results ############
 par( mfrow = c( 1,3 ) ,lwd=4)
@@ -180,6 +216,7 @@ TCGA_her2_filtered<-TCGA_her2[!duplicated(TCGA_her2$Gene),]
 rownames(TCGA_her2_filtered)<-TCGA_her2_filtered$Gene
 TCGA_her2<-subset(TCGA_her2_filtered,select=-Gene)
 TCGA_her2_log2<-log2(subset(TCGA_her2_filtered,select=-Gene)+1)
+
 ###Coefficient of variation in GFP samples across all common genes
 ####Coefficient of variation in TCGA pipeline processed data
 com_genes_TCGA<-TCGA_her2[rownames(TCGA_her2)%in%rownames(rsub_fpkm),]
@@ -266,7 +303,7 @@ standardized_mean(mean(rsub_tpmlog_her2$ERBB2[13:17]),sd(rsub_tpmlog_her2$ERBB2[
 Coefficient of variation in ERBB2 gene in HER2 overexpressed samples using TCGA pipeline is: `r sd(tcga_her2_normalized$ERBB2[13:17])/mean(tcga_her2_normalized$ERBB2[13:17])`
 using Rsubread FPKM pipeline is: `r sd(rsub_fpkm_her2$ERBB2[13:17])/mean(rsub_fpkm_her2$ERBB2[13:17])`and using Rsubread TPM pipeline is: `r sd(rsub_tpm_her2$ERBB2[13:17])/mean(rsub_tpm_her2$ERBB2[13:17])`
 
-###Assessing the effect of upper quartile normalization
+###Assessing the number of zeroes per sample
 Now checking the total number of zeros per samples in the common  samples accross PanCan12 and our datasets
 ```{r echo=FALSE}
 colnames(pancan12_zero)<-"PANCAN12"
