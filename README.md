@@ -5,11 +5,6 @@ This repository includes code for processing RNA-Seq FASTQ files and clinical da
 * We used the 'Rsubread' R package to align and summarize reads at the gene level for 7706 TCGA RNA-Seq tumor samples. The R scripts we provide here can also be used to process samples that did not come from TCGA. We have also included the code for compiling clinical data available for these tumors into a matrix format and matching the clinical IDs with the RNA-Seq IDs.
 * We have provided the code and various intermediate data files that we produced in performing the analyses we describe in the manuscript.
 
-## How to normalize raw RNA-Seq data from TCGA
-
-=======
-* We have provided the code and various intermediate data files that we produced in performing the analyses we describe in the manuscript "RNA-Sequencing data for 7706 tumor samples across 20 cancer types from The Cancer Genome Atlas."
-
 ## How to normalize raw RNA-Seq data and process clinical data from TCGA
 
 This pipeline is designed to be executed on Unix-based systems. Most of the code is written in the R programming language. But it also requires "bash" scripts to be executed at the command line.
