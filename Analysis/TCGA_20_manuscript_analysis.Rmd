@@ -67,8 +67,8 @@ We calculate the number of zero values per sample across the TCGA data set. Code
 
 Moom: mention the script that you used to generate these files.(DONE)
 ```{r}
-pancan12_zero<-read.table("PANCAN12_19583_by_3380_numZeroes.txt",row.names=1,sep='\t',skip = 1)# File is at Analysis_datasets
-pancan20_tpm_zero<-read.table("PANCAN20_19583_by_3380_numZeroes.txt",sep='\t',row.names=1,skip = 1)# File is at Analysis_datasets
+pancan12_zero<-read.table("PANCAN12_19583_by_3380_numZeroes.txt",row.names=1,sep='\t')# File is at Analysis_datasets
+pancan20_tpm_zero<-read.table("PANCAN20_19583_by_3380_numZeroes.txt",sep='\t',row.names=1)# File is at Analysis_datasets
 ```
 
 We used Random Forests regression to predict lung-cancer type based on RNA-Seq data. The R script for generating the predictions for this analysis is located at Code/Classify_luad_vs_lusc.R. LUAD and LUSC TCGA Level 3 data was downloaded from TCGA data portal and Rsubread TPM normalized LUAD and LUSC data was used in this analysis.
