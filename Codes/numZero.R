@@ -1,5 +1,5 @@
 
-##Manually drownload Pancan12 RNA_Seq dataset from https://www.synapse.org/#!Synapse:syn1695324 and Rsubread TPM RNA_Seq data from GEO accession number GSM1536837
+##Manually download Pancan12 RNA_Seq dataset from https://www.synapse.org/#!Synapse:syn1695324 and filtered for gene symbols.Additionally, download Rsubread TPM RNA_Seq data from GEO accession number GSM1536837.
 pan12<-read.table("PANCAN12.IlluminaHiSeq_RNASeqV2.geneExp.tumor_whitelist", header=1,row.names=1)
 pan20<-read.table("GSM1536837_TCGA_20.Illumina.tumor_Rsubread_TPM.txt",header=1,row.names=1)
 
