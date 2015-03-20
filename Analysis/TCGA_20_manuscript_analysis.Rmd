@@ -16,7 +16,7 @@ start_time <- Sys.time()
 * Install and load the required R package for analysis "stats", "ROCR", "pROC". The following code demonstrates how to do this.
 * Set the working directory in R to the ```TCGA_RNASeq_clinical/Analysis_datasets``` directory in this repository.
 
-```{r include=FALSE}
+```{r include=TRUE}
 
 if (!require("stats")) {
    install.packages("stats", dependencies = TRUE)
@@ -34,7 +34,7 @@ if (!require("pROC")) {
 
 The following code reads data files that have been preprocessed using either pipeline.
 
-```{r "Reading counts file" ,echo=FALSE}
+```{r "Reading counts file" ,echo=TRUE}
 # TCGA pipeline, expected counts
 rsem_her2_expected_counts<-read.table("GFP18_HER2_TCGA_Pipeline_Expected_Gene_Counts.txt", sep='\t', header=1, row.names=1, check.names=F) # This was downloaded from GEO Accession # GSE62820 and unzipped
 
@@ -63,18 +63,17 @@ rsub_preds<-read.table("rsubread_10_14.txt", sep='\t', header=1, row.names=1)
 tcga_preds<-read.table("Rsem_10_14.txt", sep='\t', header=1, row.names=1)
 ```
 
-We calculate the number of zero values per sample across the TCGA data set.
+We calculate the number of zero values per sample across the TCGA data set. Codes/numZero.R R script was used to generate the files containing total number of zero expressing genes per samples.
 
-Moom: mention the script that you used to generate these files.
-
+Moom: mention the script that you used to generate these files.(DONE)
 ```{r}
 pancan12_zero<-read.table("PANCAN12_19583_by_3380_numZeroes.txt",row.names=1,sep='\t',skip = 1)# File is at Analysis_datasets
 pancan20_tpm_zero<-read.table("PANCAN20_19583_by_3380_numZeroes.txt",sep='\t',row.names=1,skip = 1)# File is at Analysis_datasets
 ```
 
-We used Random Forests regression to predict lung-cancer type based on RNA-Seq data.
+We used Random Forests regression to predict lung-cancer type based on RNA-Seq data. The R script for generating the predictions for this analysis is located at Code/Classify_luad_vs_lusc.R. LUAD and LUSC TCGA Level 3 data was downloaded from TCGA data portal and Rsubread TPM normalized LUAD and LUSC data was used in this analysis.
 
-Moom: mention the script that you used to generate these files.
+Moom: mention the script that you used to generate these files.(DONE)
 
 ```{r}
 data12 = read.table("Classification_12_LUAD_LUSC_Predictions.txt", sep="\t", stringsAsFactors=FALSE, header=TRUE, row.names=1) # File is at Analysis_datasets
@@ -84,12 +83,14 @@ data20 = read.table("Classification_20_LUAD_LUSC_Predictions.txt", sep="\t", str
 ## Helper functions
 
 ```{r}
+#This function calculates the standardized mean using Hedge's formula
 standardized_mean<-function(m.1,sd.1,n.1,m.2,sd.2,n.2){
   sd_pooled=sqrt(((n.1-1)*sd.1^2+(n.2-1)*sd.2^2)/(n.1+n.2-2))
   (m.1-m.2)/sd_pooled
   }
 
-# Moom: please state briefly what this function does
+# Moom: please state briefly what this function does (Done)
+#This function merges two matrices on row names, sets the common items as rownames  and removes the extra column resulting from merge function.
 merge_drop<-function(x,y,by=0)
 {
   new_m<-merge(x,y,by=by)
@@ -97,6 +98,7 @@ merge_drop<-function(x,y,by=0)
   return(new_m[,2:length(colnames(new_m))])
 }
 
+#This function plots the ROC based on the actual and predicted class
 plotROC = function(actual, probabilities, plotCI=FALSE)
 {
   # bottom, left, top, right
@@ -129,7 +131,7 @@ We compared gene counts results using GFP control protein and ERBB2 protein over
 
 First, we computed the empiric cumulative distribution for all samples from the two pipelines. Second, we compared the total mapped reads per HMEC samples for the TCGA pipeline and Rsubread pipeline. Raw gene counts for GFP and HER2 HMEC samples were processed via the TCGA pipeline (expected counts) and the Rsubread pipeline (integer based), This analysis was done before any normalization method was applied.
 
-```{r echo=FALSE}
+```{r echo=TRUE}
 ##########computing the empiric cumulative distribution per sample overlaied on same graph######## 
 ###using TCGA pipelined aligned data
 ecdf_all_ex<-apply(log2(rsem_her2_expected_counts+1),2,ecdf)
