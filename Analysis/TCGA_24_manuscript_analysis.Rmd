@@ -50,7 +50,7 @@ The following code reads data files that have been preprocessed using both pipel
 
 ```{r "Reading counts file" ,echo=FALSE}
 # TCGA pipeline, expected counts
-setwd("~/Desktop/TCGA_RNASeq_Clinical/Analysis_datasets/")##update
+setwd("TCGA_RNASeq_Clinical/Analysis_datasets/")##update
 rsem_her2_expected_counts<-read.table("GFP18_HER2_TCGA_Pipeline_Expected_Gene_Counts.txt", sep='\t', header=1, row.names=1, check.names=F) # This was downloaded from GEO Accession # GSE62820 and unzipped
 
 
@@ -75,7 +75,7 @@ clinicals<-t(read.delim('TCGA20_clinical_data_ordered_all_clinical_variables_sam
 We used BinReg 2 to make HER pathway predictions. The following code reads the resulting prediction files into R.
 
 ```{r,echo=FALSE}
-setwd("~/Desktop/TCGA_RNASeq_Clinical/Analysis_datasets/")
+setwd("TCGA_RNASeq_Clinical/Analysis_datasets/")
 rsub_preds<-read.table("rsubread_10_14.txt", sep='\t', header=1, row.names=1)
 tcga_preds<-read.table("Rsem_10_14.txt", sep='\t', header=1, row.names=1)
 rsub_preds_wo_outlier<-read.table("Rsub_5_01.txt", sep='\t', header=1, row.names=1)
@@ -85,12 +85,12 @@ tcga_preds_wo_outlier<-read.table("Rsem_5_01.txt", sep='\t', header=1, row.names
 We calculate the number of zero values per sample across the TCGA data set. The Codes/numZero.R script was used to generate the files containing the total number of zero expressing genes per samples.
 
 ```{r,echo=FALSE}
-setwd("~/Desktop/TCGA_RNASeq_Clinical/Analysis_datasets/")
+setwd("TCGA_RNASeq_Clinical/Analysis_datasets/")
 pancan12_zero<-read.table("PANCAN12_19583_by_3380_numZeroes.txt",row.names=1,sep='\t')# File is at Analysis_datasets
 pancan20_tpm_zero<-read.table("PANCAN20_19583_by_3380_numZeroes.txt",sep='\t',row.names=1)# File is at Analysis_datasets
 samples<-read.table("~/Downloads/GSE62944_TCGA_20_CancerType_Samples.txt",row.names=1)
-tcga20_tpm<-data.frame(fread("~/Desktop/PANCAN20/PANCAN20.IlluminaHiSeq_RNASeqV2.tumor_Rsubread_TPM_10_9.txt"),row.names=1,check.names = F)#Download it from GEO#GSE62944
-rsem_12<-data.frame(fread("~/Desktop/PANCAN12.IlluminaHiSeq_RNASeqV2.geneExp.tumor_whitelist"),row.names=1,check.names = F)#PANCAN12 dataset downloaded from Synapse
+tcga20_tpm<-data.frame(fread("PANCAN20.IlluminaHiSeq_RNASeqV2.tumor_Rsubread_TPM_10_9.txt"),row.names=1,check.names = F)#Download it from GEO#GSE62944
+rsem_12<-data.frame(fread("PANCAN12.IlluminaHiSeq_RNASeqV2.geneExp.tumor_whitelist"),row.names=1,check.names = F)#PANCAN12 dataset downloaded from Synapse
 
 
 
@@ -99,7 +99,7 @@ rsem_12<-data.frame(fread("~/Desktop/PANCAN12.IlluminaHiSeq_RNASeqV2.geneExp.tum
 We used Random Forests regression to predict lung-cancer type based on RNA-Seq data. The R script for generating the predictions for this analysis is located at Code/Classify_luad_vs_lusc.R. Code/LUSC_LUAD_discordant_analysis bash script describes how the predictions were made for LUAD and LUSC with common genes across TCGA and Rsubread data sets. Same script also describes how discordant samples and genes that differentially expressed to alter LUAD and LUSC predictions. LUAD and LUSC TCGA Level 3 data was downloaded from TCGA data portal and Rsubread TPM normalized LUAD and LUSC data was used in this analysis.
 
 ```{r}
-setwd("~/Desktop/TCGA_RNASeq_Clinical/Analysis_datasets/")
+setwd("TCGA_RNASeq_Clinical/Analysis_datasets/")
 data12 = read.table("Classification_12_LUAD_LUSC_Predictions.txt", sep="\t", stringsAsFactors=FALSE, header=TRUE, row.names=1) # File is at Analysis_datasets
 data20 = read.table("Classification_20_LUAD_LUSC_Predictions.txt", sep="\t", stringsAsFactors=FALSE, header=TRUE, row.names=1)# File is at Analysis_datasets
 data12_com = read.table("TCGA_CommonGenes_Predictions.txt", sep="\t", stringsAsFactors=FALSE, header=TRUE, row.names=1) # File is at Analysis_datasets
