@@ -53,6 +53,9 @@ We also provide an R Markdown file (Analysis/TCGA_24_manuscript_analysis.Rmd) th
     * pROC
     * caret
     * knitr
+    * data.table
+    * heatmap3
+    * RColorBrewer
 
 3. We used the [BinReg 2](http://www.biomedcentral.com/1471-2105/12/443) algorithm to make HER2 signature predictions on TCGA breast cancer samples. BinReg 2 runs on the MatLab platform. We used our HER2 signature datasets as training samples and the TCGA breast cancer datasets as test samples. We used the following parameters: 200 genes, 2 metagenes, quantile normalization (-g 200 -m 2 -q) to minimize the batch effects between training and test samples. The original outputs from BinReg2 are located within the ```Analysis_datasets/10_14_predictions_raw``` directory. Rerun of the HER2 pathway prediction excluding the two less consistent HER2 training samples is located at ``Analysis_datasets/5_01_predictions_raw``` .These output predictions are summarized in the Analysis_datasets directory folder for further evaluation.
 
