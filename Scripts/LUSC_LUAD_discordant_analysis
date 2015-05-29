@@ -1,0 +1,23 @@
+#!/bin/bash
+
+
+Rscript --vanilla --max-ppsize=500000 ../Codes/LUSC_vs_LUAD.R
+
+Rscript --vanilla ../Codes/CalcAUC.R ../Analysis_datasets/TCGA_AllGenes_Predictions.txt obs LUAD ../Analysis_datasets/TCGA_AllGenes_ROC.pdf "TCGA Level 3 - All Genes"
+Rscript --vanilla ../Codes/CalcAUC.R ../Analysis_datasets/RSubread_AllGenes_Predictions.txt obs LUAD ../Analysis_datasets/RSubread_AllGenes_ROC.pdf "RSubread - All Genes"
+
+Rscript --vanilla ../Codes/CalcAUC.R ../Analysis_datasets/TCGA_CommonGenes_Predictions.txt obs LUAD ../Analysis_datasets/TCGA_CommonGenes_ROC.pdf "TCGA Level 3 - Common Genes"
+Rscript --vanilla ../Codes/CalcAUC.R ../Analysis_datasets/RSubread_CommonGenes_Predictions.txt obs LUAD ../Analysis_datasets/RSubread_CommonGenes_ROC.pdf "RSubread - Common Genes"
+
+Rscript --vanilla ../Codes/CalcAUC.R ../Analysis_datasets/RSubread_NonOverlappingGenes_Predictions.txt obs ../Analysis_datasets/LUAD RSubread_NonOverlappingGenes_ROC.pdf "RSubread - Non-Overlapping Genes"
+
+Rscript --vanilla ../Codes/IdentifyDiscordantPredictions.R ../Analysis_datasets/TCGA_AllGenes_Predictions.txt obs pred ../Analysis_datasets/Potentially_Discordant_LUSC_Samples.txt
+Rscript --vanilla ../Codes/IdentifyDiscordantPredictions.R ../Analysis_datasets/TCGA_CommonGenes_Predictions.txt obs pred ../Analysis_datasets/Potentially_Discordant_LUSC_Samples.txt
+Rscript --vanilla ../Codes/IdentifyDiscordantPredictions.R ../Analysis_datasets/RSubread_AllGenes_Predictions.txt obs pred ../Analysis_datasets/Potentially_Discordant_LUSC_Samples.txt
+Rscript --vanilla ../Codes/IdentifyDiscordantPredictions.R ../Analysis_datasets/RSubread_CommonGenes_Predictions.txt obs pred ../Analysis_datasets/Potentially_Discordant_LUSC_Samples.txt
+Rscript --vanilla ../Codes/IdentifyDiscordantPredictions.R ../Analysis_datasets/RSubread_NonOverlappingGenes_Predictions.txt obs pred ../Analysis_datasets/Potentially_Discordant_LUSC_Samples.txt
+
+Rscript --vanilla ../Codes/IdentifyInconsistentPredictions.R ../Analysis_datasets/TCGA_AllGenes_Predictions.txt ../Analysis_datasets/RSubread_AllGenes_Predictions.txt obs pred
+Rscript --vanilla ../Codes/IdentifyInconsistentPredictions.R ../Analysis_datasets/TCGA_CommonGenes_Predictions.txt ../Analysis_datasets/RSubread_CommonGenes_Predictions.txt obs pred
+
+Rscript --vanilla ../Codes/PlotDiscordant.R

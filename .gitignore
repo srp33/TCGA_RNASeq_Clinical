@@ -21,3 +21,10 @@ nohup*
 Stats
 update_git
 commit_git
+Analysis/*_cache
+Analysis/*_cache/*
+Analysis/*_files
+Analysis/*_files/*
+Codes/ForMoom
+Codes/ForMoom/*
+Analysis/*20*

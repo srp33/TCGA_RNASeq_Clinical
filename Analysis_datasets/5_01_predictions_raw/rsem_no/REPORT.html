@@ -1,0 +1,48 @@
+<HTML>
+<HEAD>
+<TITLE>CreateSignatures Report</TITLE>
+</HEAD>
+<BODY>
+<CENTER><H1><EM>CreateSignatures</EM> Report</H1></CENTER>
+<H3>I.  Analysis</H3>
+<UL>
+<LI>I ran a signature analysis using a training set of <SPAN STYLE=background-color:yellow>GFP_RSEM_log_10_9_filtered.txt</SPAN> and <SPAN STYLE=background-color:yellow>HER2_RSEM_3_log.txt</SPAN>.  I generated predictions on <SPAN STYLE=background-color:yellow>TCGA_RSEM_log_BRCA_10_9_filtered.txt</SPAN>.
+<LI>I used the <SPAN STYLE=background-color:yellow>BinReg 2</SPAN> algorithm with <SPAN STYLE=background-color:yellow>200 genes</SPAN> and <SPAN STYLE=background-color:yellow>2 metagenes</SPAN>.
+<LI>I applied <SPAN STYLE=background-color:yellow>quantile</SPAN> normalization.
+<LI>For the statistical (Markov chain Monte Carlo) simulation, I discarded 1,000 samples for the burn-in and then collected 5,000 samples for the model.
+</UL>
+<P>
+<H3>II.  Results</H3>
+<TABLE BORDER=0 CELLSPACING=10>
+<TR>
+<TD COLSPAN=2 ALIGN=CENTER>
+<H3>200 Genes, 2 Metagenes</H3>
+</TD>
+</TR>
+<TR>
+<TD>
+<A HREF=signature.png>
+<IMG HEIGHT=480 SRC=signature.png>
+</A>
+</TD><TD>
+<A HREF=predictions.png>
+<IMG HEIGHT=480 SRC=predictions.png>
+</A>
+</TD>
+</TR>
+<TR>
+<TD VALIGN=TOP>
+<B>Figure 1: Signature Heatmap. </B>In this heatmap, each row represents a gene in the signature. The first 12 columns are the samples from the <EM>train 0</EM> data set, and the remaining 3 columns are the samples from the <EM>train 1</EM> data set. Warm colors indicate high expression of the gene, and cool colors indicate low expression.
+</TD><TD VALIGN=TOP>
+<B>Figure 2: Predictions.</B> This scatter plot shows the predictions from the signature for each sample. On the Y-axis, high probabilities indicate that the gene expression profile of the sample better resembles the train 1 class, while low probabilities indicate a closer resemblance to train 0.The blue and red circles are the predictions (from leave-one-out cross-validation) on the train 0 and train 1 samples, respectively. The black squares are the predictions on the test samples. The error bars show the 95% credible interval. The X-axis, the Metagene Score, is the magnitude of the sample on the first principal component. This is used only to separate the samples on the plot, and we do not further interpret these values.<P>The raw values from this plot are available as a tab-delimited text file: <A HREF=probabilities.txt>
+probabilities.txt
+</A>.
+</TD>
+</TR>
+</TABLE>
+<P>
+<HR>
+<EM>This analysis was run on Saturday, 02 May 2015, 04:04 PM on adira.genetics.utah.edu.  It took 17m 54s to complete.
+</EM>
+</BODY>
+</HTML>
