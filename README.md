@@ -1,4 +1,4 @@
-This repository includes code for processing RNA-Seq FASTQ files and clinical data from The Cancer Genome Atlas. In addition, we have included the code used for analyzing data in our manuscript, "Alternative preprocessing of RNA-Sequencing data in The Cancer Genome Atlas leads to improved analysis results "
+This repository includes code for processing RNA-Seq FASTQ files and clinical data from The Cancer Genome Atlas. In addition, we have included the code used for analyzing data in our manuscript, "Alternative preprocessing of RNA-Sequencing data in The Cancer Genome Atlas leads to improved analysis results" (Rahman, Mumtahena, et al. _Bioinformatics_ [2015:10.1093/bioinformatics/btv377](http://bioinformatics.oxfordjournals.org/content/early/2015/08/14/bioinformatics.btv377.full).
 
 ## What is this repository for?
 
