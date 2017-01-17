@@ -63,6 +63,8 @@ We also provide an R Markdown file (Analysis/TCGA_24_manuscript_analysis.Rmd) th
 
 5. Use the ```knitr``` package to compile Analysis/TCGA_24_manuscript_analysis.Rmd. (It is convenient to complete this step within the [RStudio environment](http://www.rstudio.com/).) Also be sure to set the working directory to ```Analysis_datasets```.  Our results are stored in the TCGA_24_manuscript_analysis.html file.
 
+6. Our analysis datasets and outputs are available [here] (https://www.dropbox.com/sh/4e0c8u7jke694tu/AADEQnB5LbCWihb3A5f04O9va?dl=0). 
+
 ## Contact information
 
 * Mumtahena Rahman. [moom.rahman@utah.edu](mailto:moom.rahman@utah.edu)
